@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─── KaTeX via CDN (loaded in useEffect) ───────────────────────────────────
 function useMathReady() {
   const [ready, setReady] = useState(typeof window !== "undefined" && !!window.katex);
   useEffect(() => {
@@ -23,1318 +22,446 @@ function Math({ tex, display = false }) {
   useEffect(() => {
     if (!mathReady || !ref.current || !window.katex) return;
     try {
-      window.katex.render(tex, ref.current, {
-        displayMode: display,
-        throwOnError: false,
-        trust: true,
-        strict: false,
-      });
+      window.katex.render(tex, ref.current, { displayMode: display, throwOnError: false, trust: true, strict: false });
     } catch (e) { ref.current.textContent = tex; }
   }, [tex, display, mathReady]);
   return <span ref={ref} className={display ? "block my-2" : "inline"} />;
 }
 
-// ─── DATA ──────────────────────────────────────────────────────────────────
-
 const SUBJECTS = {
-  physics: {
-    label: "Physics",
-    icon: "⚛",
-    color: "#3B82F6",
-    glow: "rgba(59,130,246,0.35)",
-    accent: "#60A5FA",
-    bg: "rgba(59,130,246,0.08)",
-    border: "rgba(59,130,246,0.25)",
-  },
-  chemistry: {
-    label: "Chemistry",
-    icon: "⚗",
-    color: "#10B981",
-    glow: "rgba(16,185,129,0.35)",
-    accent: "#34D399",
-    bg: "rgba(16,185,129,0.08)",
-    border: "rgba(16,185,129,0.25)",
-  },
-  mathematics: {
-    label: "Mathematics",
-    icon: "∑",
-    color: "#8B5CF6",
-    glow: "rgba(139,92,246,0.35)",
-    accent: "#A78BFA",
-    bg: "rgba(139,92,246,0.08)",
-    border: "rgba(139,92,246,0.25)",
-  },
+  physics: { label: "Physics", icon: "⚛", color: "#60A5FA", glow: "rgba(96,165,250,0.3)", bg: "rgba(96,165,250,0.1)", border: "rgba(96,165,250,0.25)" },
+  chemistry: { label: "Chemistry", icon: "⚗", color: "#34D399", glow: "rgba(52,211,153,0.3)", bg: "rgba(52,211,153,0.1)", border: "rgba(52,211,153,0.25)" },
+  mathematics: { label: "Maths", icon: "∑", color: "#A78BFA", glow: "rgba(167,139,250,0.3)", bg: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.25)" },
 };
 
 const PHYSICS_DATA = [
-  {
-    id: "mechanics",
-    title: "Mechanics",
-    tags: ["JEE", "CET", "NCERT"],
-    sections: [
-      {
-        title: "Kinematics – Key Equations",
-        formulas: [
-          { label: "First equation of motion", tex: "v = u + at", jee: true, cet: true },
-          { label: "Second equation of motion", tex: "s = ut + \\frac{1}{2}at^2", jee: true, cet: true },
-          { label: "Third equation of motion", tex: "v^2 = u^2 + 2as", jee: true, cet: true },
-          { label: "Displacement in nth second", tex: "s_n = u + \\frac{a(2n-1)}{2}", jee: true, cet: false },
-          { label: "Range of projectile", tex: "R = \\frac{u^2 \\sin 2\\theta}{g}", jee: true, cet: true },
-          { label: "Maximum height", tex: "H = \\frac{u^2 \\sin^2\\theta}{2g}", jee: true, cet: true },
-          { label: "Time of flight", tex: "T = \\frac{2u\\sin\\theta}{g}", jee: true, cet: true },
-          { label: "Maximum range (θ=45°)", tex: "R_{max} = \\frac{u^2}{g}", jee: true, cet: true },
-          { label: "Relative velocity", tex: "\\vec{v}_{AB} = \\vec{v}_A - \\vec{v}_B", jee: true, cet: true },
-        ],
-        notes: [
-          "At maximum height: vertical velocity = 0, horizontal velocity = u cosθ",
-          "For same range: angles θ and (90°−θ) give same R",
-          "Acceleration due to gravity g = 9.8 m/s² ≈ 10 m/s² (CET approx)",
-        ],
-        mistakes: ["Confusing displacement with distance in nth second formula", "Forgetting that g acts downward only"],
-        tricks: ["R is maximum at 45° — memorize this"],
-      },
-      {
-        title: "Newton's Laws & Forces",
-        formulas: [
-          { label: "Newton's 2nd Law", tex: "\\vec{F} = m\\vec{a}", jee: true, cet: true, important: true },
-          { label: "Weight", tex: "W = mg", jee: true, cet: true },
-          { label: "Friction (kinetic)", tex: "f_k = \\mu_k N", jee: true, cet: true },
-          { label: "Friction (static max)", tex: "f_s \\leq \\mu_s N", jee: true, cet: true },
-          { label: "Banking angle", tex: "\\tan\\theta = \\frac{v^2}{rg}", jee: true, cet: true },
-          { label: "Pseudo force (non-inertial frame)", tex: "F_{pseudo} = -ma_0", jee: true, cet: false },
-        ],
-        notes: [
-          "μs > μk always",
-          "Normal force ≠ weight when surface is inclined or accelerating",
-          "Banking: no friction assumed unless stated",
-        ],
-        mistakes: ["Taking g = 10 when exact value needed", "Ignoring pseudo force in accelerating frames"],
-        tricks: ["For connected blocks on smooth surface: a = F/(m₁+m₂), T = m₂a"],
-      },
-      {
-        title: "Work, Energy & Power",
-        formulas: [
-          { label: "Work done", tex: "W = \\vec{F} \\cdot \\vec{d} = Fd\\cos\\theta", jee: true, cet: true, important: true },
-          { label: "Kinetic Energy", tex: "KE = \\frac{1}{2}mv^2", jee: true, cet: true },
-          { label: "Work-Energy theorem", tex: "W_{net} = \\Delta KE", jee: true, cet: true, important: true },
-          { label: "Potential Energy (gravity)", tex: "PE = mgh", jee: true, cet: true },
-          { label: "Elastic PE (spring)", tex: "U = \\frac{1}{2}kx^2", jee: true, cet: true },
-          { label: "Power", tex: "P = \\frac{W}{t} = \\vec{F} \\cdot \\vec{v}", jee: true, cet: true },
-          { label: "Efficiency", tex: "\\eta = \\frac{P_{output}}{P_{input}} \\times 100\\%", jee: false, cet: true },
-        ],
-        notes: [
-          "Conservative forces: work done is path-independent",
-          "Spring constant k: unit N/m",
-          "1 kWh = 3.6 × 10⁶ J",
-        ],
-        mistakes: ["Using wrong angle in W = Fd cosθ", "Forgetting that friction does negative work"],
-        tricks: ["Gravitational PE: reference can be any point; only ΔPE matters"],
-      },
-      {
-        title: "Momentum & Collisions",
-        formulas: [
-          { label: "Linear momentum", tex: "\\vec{p} = m\\vec{v}", jee: true, cet: true },
-          { label: "Impulse", tex: "J = \\vec{F} \\cdot \\Delta t = \\Delta\\vec{p}", jee: true, cet: true },
-          { label: "Coefficient of restitution", tex: "e = \\frac{v_2 - v_1}{u_1 - u_2}", jee: true, cet: true, important: true },
-          { label: "Elastic collision (equal masses)", tex: "v_1' = u_2, \\quad v_2' = u_1", jee: true, cet: true },
-          { label: "Perfectly inelastic collision", tex: "m_1 u_1 + m_2 u_2 = (m_1+m_2)v", jee: true, cet: true },
-        ],
-        notes: [
-          "e = 1: perfectly elastic, e = 0: perfectly inelastic",
-          "Momentum always conserved if no external force",
-          "KE conserved only in elastic collision",
-        ],
-        mistakes: ["Confusing e formula direction", "Forgetting to check if system is isolated"],
-        tricks: ["For elastic collision between equal masses: velocities exchange"],
-      },
-      {
-        title: "Rotational Motion",
-        formulas: [
-          { label: "Torque", tex: "\\tau = r \\times F = I\\alpha", jee: true, cet: true, important: true },
-          { label: "Angular momentum", tex: "L = I\\omega = mvr", jee: true, cet: true },
-          { label: "Rotational KE", tex: "KE_{rot} = \\frac{1}{2}I\\omega^2", jee: true, cet: true },
-          { label: "MI of rod (center)", tex: "I = \\frac{ML^2}{12}", jee: true, cet: true },
-          { label: "MI of disk (center)", tex: "I = \\frac{MR^2}{2}", jee: true, cet: true },
-          { label: "MI of ring (center)", tex: "I = MR^2", jee: true, cet: true },
-          { label: "MI of solid sphere", tex: "I = \\frac{2}{5}MR^2", jee: true, cet: true },
-          { label: "MI of hollow sphere", tex: "I = \\frac{2}{3}MR^2", jee: true, cet: true },
-          { label: "Parallel axis theorem", tex: "I = I_{cm} + Md^2", jee: true, cet: true, important: true },
-          { label: "Perpendicular axis theorem", tex: "I_z = I_x + I_y", jee: true, cet: true },
-          { label: "Rolling without slipping", tex: "v = R\\omega", jee: true, cet: true },
-        ],
-        notes: [
-          "Perp. axis theorem only for 2D laminas",
-          "Rolling: total KE = ½mv² + ½Iω²",
-          "Conservation of L when τ_ext = 0",
-        ],
-        mistakes: ["Applying perp. axis theorem to 3D bodies", "Wrong MI formula for different axes"],
-        tricks: ["Hollow > Solid for same shape: hollow has more MI"],
-      },
-      {
-        title: "Gravitation",
-        formulas: [
-          { label: "Newton's law of gravitation", tex: "F = G\\frac{m_1 m_2}{r^2}", jee: true, cet: true, important: true },
-          { label: "Gravitational field", tex: "g = \\frac{GM}{R^2}", jee: true, cet: true },
-          { label: "Escape velocity", tex: "v_e = \\sqrt{\\frac{2GM}{R}} = \\sqrt{2gR}", jee: true, cet: true, important: true },
-          { label: "Orbital velocity", tex: "v_0 = \\sqrt{\\frac{GM}{r}}", jee: true, cet: true },
-          { label: "Orbital period", tex: "T = 2\\pi\\sqrt{\\frac{r^3}{GM}}", jee: true, cet: true },
-          { label: "Kepler's 3rd law", tex: "T^2 \\propto r^3", jee: true, cet: true, important: true },
-          { label: "Gravitational PE", tex: "U = -\\frac{GMm}{r}", jee: true, cet: true },
-          { label: "Binding energy", tex: "BE = \\frac{GMm}{2r}", jee: true, cet: false },
-          { label: "g variation with height", tex: "g_h = g\\left(1 - \\frac{2h}{R}\\right)", jee: true, cet: true },
-          { label: "g variation with depth", tex: "g_d = g\\left(1 - \\frac{d}{R}\\right)", jee: true, cet: true },
-        ],
-        notes: [
-          "G = 6.67 × 10⁻¹¹ N m²/kg²",
-          "Escape velocity from Earth ≈ 11.2 km/s",
-          "Orbital velocity ≈ 7.9 km/s (near Earth surface)",
-          "g = 0 at center of Earth",
-        ],
-        mistakes: ["Using r from center vs surface", "Sign of U (always negative)"],
-        tricks: ["vₑ = √2 × v₀ (escape = √2 × orbital near surface)"],
-      },
-    ],
-  },
-  {
-    id: "elasticity",
-    title: "Elasticity",
-    tags: ["CET", "JEE"],
-    sections: [
-      {
-        title: "Stress, Strain & Moduli",
-        formulas: [
-          { label: "Stress", tex: "\\sigma = \\frac{F}{A}", jee: true, cet: true },
-          { label: "Longitudinal Strain", tex: "\\varepsilon = \\frac{\\Delta L}{L}", jee: true, cet: true },
-          { label: "Young's Modulus", tex: "Y = \\frac{\\sigma}{\\varepsilon} = \\frac{FL}{A\\Delta L}", jee: true, cet: true, important: true },
-          { label: "Bulk Modulus", tex: "B = -\\frac{\\Delta P}{\\Delta V/V}", jee: true, cet: true },
-          { label: "Shear Modulus", tex: "G = \\frac{F/A}{\\Delta x/L}", jee: true, cet: false },
-          { label: "Poisson's Ratio", tex: "\\sigma_P = -\\frac{\\Delta r / r}{\\Delta L / L}", jee: true, cet: false },
-          { label: "Elastic PE density", tex: "u = \\frac{1}{2} \\times \\text{stress} \\times \\text{strain}", jee: true, cet: true },
-        ],
-        notes: [
-          "Steel has higher Y than rubber — stiffer material",
-          "Y of steel ≈ 2 × 10¹¹ Pa",
-          "0 ≤ σ_Poisson ≤ 0.5 for real materials",
-        ],
-        mistakes: ["Confusing bulk modulus sign", "Area in stress = cross-sectional area"],
-        tricks: ["Elastic PE = ½ × stress × strain × volume"],
-      },
-    ],
-  },
-  {
-    id: "fluids",
-    title: "Fluid Mechanics",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Pressure & Buoyancy",
-        formulas: [
-          { label: "Pressure", tex: "P = \\frac{F}{A}", jee: true, cet: true },
-          { label: "Hydrostatic pressure", tex: "P = P_0 + \\rho g h", jee: true, cet: true, important: true },
-          { label: "Archimedes principle", tex: "F_b = \\rho_{fluid} \\cdot V_{sub} \\cdot g", jee: true, cet: true, important: true },
-          { label: "Pascal's law", tex: "\\frac{F_1}{A_1} = \\frac{F_2}{A_2}", jee: true, cet: true },
-        ],
-        notes: ["Pressure depends only on depth, not on shape/area of container", "Floating: weight = buoyant force"],
-        mistakes: ["Using total volume instead of submerged volume in Fb"],
-        tricks: ["Fractional depth submerged = ρ_object/ρ_fluid"],
-      },
-      {
-        title: "Continuity & Bernoulli",
-        formulas: [
-          { label: "Continuity equation", tex: "A_1 v_1 = A_2 v_2", jee: true, cet: true, important: true },
-          { label: "Bernoulli's theorem", tex: "P + \\frac{1}{2}\\rho v^2 + \\rho g h = \\text{const}", jee: true, cet: true, important: true },
-          { label: "Torricelli's theorem", tex: "v = \\sqrt{2gh}", jee: true, cet: true },
-          { label: "Venturimeter", tex: "v_1 = A_2\\sqrt{\\frac{2g\\Delta h}{A_1^2 - A_2^2}}", jee: true, cet: false },
-        ],
-        notes: [
-          "Bernoulli valid for ideal fluid (non-viscous, incompressible, streamline)",
-          "Torricelli: speed of efflux from hole at depth h",
-        ],
-        mistakes: ["Applying Bernoulli to viscous flow", "Wrong sign of h in Bernoulli"],
-        tricks: ["Higher velocity → Lower pressure (Bernoulli key insight)"],
-      },
-    ],
-  },
-  {
-    id: "surface",
-    title: "Surface Tension",
-    tags: ["CET", "JEE"],
-    sections: [
-      {
-        title: "Surface Tension Formulas",
-        formulas: [
-          { label: "Surface tension", tex: "T = \\frac{F}{l}", jee: true, cet: true },
-          { label: "Surface energy", tex: "E = T \\times \\Delta A", jee: true, cet: true },
-          { label: "Excess pressure (bubble)", tex: "\\Delta P = \\frac{4T}{r}", jee: true, cet: true, important: true },
-          { label: "Excess pressure (drop)", tex: "\\Delta P = \\frac{2T}{r}", jee: true, cet: true, important: true },
-          { label: "Capillary rise", tex: "h = \\frac{2T\\cos\\theta}{r\\rho g}", jee: true, cet: true, important: true },
-          { label: "Work done in blowing bubble", tex: "W = 8\\pi r^2 T", jee: true, cet: true },
-        ],
-        notes: [
-          "Bubble (soap) has 2 surfaces → 4T/r; drop has 1 surface → 2T/r",
-          "θ < 90°: wets surface, rises; θ > 90°: doesn't wet, falls (mercury)",
-          "Water-glass: θ ≈ 0°; Mercury-glass: θ ≈ 135°",
-        ],
-        mistakes: ["Using 2T/r for soap bubble (should be 4T/r)"],
-        tricks: ["Bubble = 2 surfaces = 2× excess pressure of a drop"],
-      },
-    ],
-  },
-  {
-    id: "viscosity",
-    title: "Viscosity",
-    tags: ["CET"],
-    sections: [
-      {
-        title: "Viscous Flow",
-        formulas: [
-          { label: "Viscous force (Newton's law)", tex: "F = -\\eta A \\frac{dv}{dx}", jee: false, cet: true },
-          { label: "Stokes' law", tex: "F = 6\\pi\\eta r v", jee: true, cet: true, important: true },
-          { label: "Terminal velocity", tex: "v_t = \\frac{2r^2(\\rho - \\sigma)g}{9\\eta}", jee: true, cet: true, important: true },
-          { label: "Poiseuille's formula", tex: "Q = \\frac{\\pi P r^4}{8\\eta l}", jee: true, cet: false },
-          { label: "Reynolds number", tex: "R_e = \\frac{\\rho v D}{\\eta}", jee: true, cet: false },
-        ],
-        notes: [
-          "Terminal velocity: drag force + buoyancy = weight",
-          "Re < 2000: laminar; Re > 3000: turbulent",
-          "Viscosity decreases with temp for liquids; increases for gases",
-        ],
-        mistakes: ["Forgetting buoyancy in terminal velocity derivation"],
-        tricks: ["vt ∝ r² — doubling radius quadruples terminal velocity"],
-      },
-    ],
-  },
-  {
-    id: "shm",
-    title: "Simple Harmonic Motion",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "SHM Fundamentals",
-        formulas: [
-          { label: "SHM condition", tex: "a = -\\omega^2 x", jee: true, cet: true, important: true },
-          { label: "Displacement", tex: "x = A\\sin(\\omega t + \\phi)", jee: true, cet: true },
-          { label: "Velocity", tex: "v = A\\omega\\cos(\\omega t + \\phi) = \\omega\\sqrt{A^2 - x^2}", jee: true, cet: true, important: true },
-          { label: "Angular frequency", tex: "\\omega = 2\\pi f = \\frac{2\\pi}{T}", jee: true, cet: true },
-          { label: "Simple pendulum period", tex: "T = 2\\pi\\sqrt{\\frac{l}{g}}", jee: true, cet: true, important: true },
-          { label: "Spring-mass period", tex: "T = 2\\pi\\sqrt{\\frac{m}{k}}", jee: true, cet: true, important: true },
-          { label: "KE in SHM", tex: "KE = \\frac{1}{2}m\\omega^2(A^2 - x^2)", jee: true, cet: true },
-          { label: "PE in SHM", tex: "PE = \\frac{1}{2}m\\omega^2 x^2", jee: true, cet: true },
-          { label: "Total energy", tex: "E = \\frac{1}{2}m\\omega^2 A^2", jee: true, cet: true, important: true },
-          { label: "Springs in series", tex: "\\frac{1}{k_{eff}} = \\frac{1}{k_1} + \\frac{1}{k_2}", jee: true, cet: true },
-          { label: "Springs in parallel", tex: "k_{eff} = k_1 + k_2", jee: true, cet: true },
-        ],
-        notes: [
-          "At equilibrium (x=0): KE max, PE = 0",
-          "At amplitude (x=A): KE = 0, PE max",
-          "Total energy independent of x — constant",
-          "Simple pendulum: T independent of mass and amplitude (small angles)",
-        ],
-        mistakes: ["Using T = 2π√(l/g) for large angles", "Sign errors in SHM equation"],
-        tricks: ["v_max = Aω at x = 0", "a_max = Aω² at x = ±A"],
-      },
-    ],
-  },
-  {
-    id: "waves",
-    title: "Waves & Sound",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Wave Properties",
-        formulas: [
-          { label: "Wave equation", tex: "y = A\\sin(kx - \\omega t)", jee: true, cet: true },
-          { label: "Wave speed", tex: "v = f\\lambda = \\frac{\\omega}{k}", jee: true, cet: true },
-          { label: "Speed in string", tex: "v = \\sqrt{\\frac{T}{\\mu}}", jee: true, cet: true, important: true },
-          { label: "Speed of sound (Newton-Laplace)", tex: "v = \\sqrt{\\frac{\\gamma P}{\\rho}}", jee: true, cet: true },
-          { label: "Speed of sound at temp T", tex: "v_T = v_0\\sqrt{\\frac{T}{273}}", jee: true, cet: true },
-          { label: "Sound: v at 0°C", tex: "v_0 = 332 \\text{ m/s}", jee: true, cet: true },
-        ],
-        notes: ["μ = mass per unit length of string", "γ = 1.4 for diatomic gas (air)"],
-        mistakes: ["Using Newton's formula (without γ)"],
-        tricks: ["v increases ~0.6 m/s per °C rise in temperature"],
-      },
-      {
-        title: "Standing Waves & Resonance",
-        formulas: [
-          { label: "String (both ends fixed) — nth harmonic", tex: "f_n = \\frac{n}{2L}\\sqrt{\\frac{T}{\\mu}}", jee: true, cet: true, important: true },
-          { label: "Open pipe — nth harmonic", tex: "f_n = \\frac{nv}{2L}", jee: true, cet: true },
-          { label: "Closed pipe — nth harmonic (odd only)", tex: "f_n = \\frac{(2n-1)v}{4L}", jee: true, cet: true, important: true },
-          { label: "Beat frequency", tex: "f_{beat} = |f_1 - f_2|", jee: true, cet: true },
-          { label: "Doppler effect", tex: "f' = f\\frac{v \\pm v_o}{v \\mp v_s}", jee: true, cet: true, important: true },
-        ],
-        notes: [
-          "Closed pipe: only odd harmonics present",
-          "Open pipe: all harmonics present",
-          "Beat: periodic variation of loudness",
-          "Doppler: + in numerator when observer moves toward source",
-        ],
-        mistakes: ["Wrong sign in Doppler formula", "Confusing open/closed pipe harmonics"],
-        tricks: ["Doppler: numerator sign same as observer direction toward source; denominator opposite to source direction toward observer"],
-      },
-    ],
-  },
-  {
-    id: "optics",
-    title: "Ray Optics",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Mirrors & Refraction",
-        formulas: [
-          { label: "Mirror formula", tex: "\\frac{1}{f} = \\frac{1}{v} + \\frac{1}{u}", jee: true, cet: true, important: true },
-          { label: "Magnification (mirror)", tex: "m = -\\frac{v}{u}", jee: true, cet: true },
-          { label: "Snell's law", tex: "n_1 \\sin\\theta_1 = n_2 \\sin\\theta_2", jee: true, cet: true, important: true },
-          { label: "Critical angle", tex: "\\sin C = \\frac{1}{n}", jee: true, cet: true },
-          { label: "Lens formula", tex: "\\frac{1}{f} = \\frac{1}{v} - \\frac{1}{u}", jee: true, cet: true, important: true },
-          { label: "Lensmaker's formula", tex: "\\frac{1}{f} = (n-1)\\left(\\frac{1}{R_1} - \\frac{1}{R_2}\\right)", jee: true, cet: true },
-          { label: "Power of lens", tex: "P = \\frac{1}{f(\\text{in m})}", jee: true, cet: true },
-          { label: "Lenses in contact", tex: "P = P_1 + P_2", jee: true, cet: true },
-          { label: "Refractive index", tex: "n = \\frac{c}{v} = \\frac{\\sin i}{\\sin r}", jee: true, cet: true },
-        ],
-        notes: [
-          "Sign convention: distances measured from pole/optical center",
-          "Real image: negative v for mirror, positive v for lens",
-          "Diopter = m⁻¹ (unit of power)",
-          "n_glass ≈ 1.5, n_water = 1.33",
-        ],
-        mistakes: ["Wrong sign in lens formula", "Confusing mirror and lens formulae"],
-        tricks: ["Lens formula: v−u in denominator; Mirror: v+u"],
-      },
-      {
-        title: "Prism & Dispersion",
-        formulas: [
-          { label: "Prism formula (min deviation)", tex: "n = \\frac{\\sin\\frac{A+\\delta_m}{2}}{\\sin\\frac{A}{2}}", jee: true, cet: true, important: true },
-          { label: "Deviation by prism (small angle)", tex: "\\delta = (n-1)A", jee: true, cet: true },
-          { label: "Dispersive power", tex: "\\omega = \\frac{n_V - n_R}{n_Y - 1}", jee: true, cet: false },
-        ],
-        notes: [
-          "At min deviation: r₁ = r₂ = A/2",
-          "VIBGYOR: violet bends most, red least",
-          "Dispersion: different colors have different n",
-        ],
-        mistakes: ["Using exact formula when small angle given"],
-        tricks: ["Minimum deviation: ray passes symmetrically through prism"],
-      },
-    ],
-  },
-  {
-    id: "wave_optics",
-    title: "Wave Optics",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Interference & Diffraction",
-        formulas: [
-          { label: "Fringe width (YDSE)", tex: "\\beta = \\frac{\\lambda D}{d}", jee: true, cet: true, important: true },
-          { label: "Path difference (constructive)", tex: "\\Delta x = n\\lambda", jee: true, cet: true },
-          { label: "Path difference (destructive)", tex: "\\Delta x = (2n-1)\\frac{\\lambda}{2}", jee: true, cet: true },
-          { label: "Single slit: min diffraction", tex: "a\\sin\\theta = n\\lambda", jee: true, cet: true },
-          { label: "Resolving power (telescope)", tex: "\\theta = \\frac{1.22\\lambda}{D}", jee: true, cet: false },
-          { label: "Malus's law", tex: "I = I_0 \\cos^2\\theta", jee: true, cet: true, important: true },
-          { label: "Brewster's law", tex: "\\tan i_B = n", jee: true, cet: true },
-        ],
-        notes: [
-          "Coherent sources: same frequency, constant phase difference",
-          "In YDSE: d = slit separation, D = screen distance",
-          "Malus law: intensity after polarizer = I₀cos²θ",
-          "At Brewster angle: reflected ray is fully polarized",
-        ],
-        mistakes: ["Confusing d and D in fringe width formula", "Path difference vs phase difference (Δφ = 2πΔx/λ)"],
-        tricks: ["Fringe width ∝ λ — larger λ = wider fringes (red > violet)"],
-      },
-    ],
-  },
-  {
-    id: "thermal",
-    title: "Thermal Expansion & Calorimetry",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Thermal Expansion",
-        formulas: [
-          { label: "Linear expansion", tex: "\\Delta L = L_0 \\alpha \\Delta T", jee: true, cet: true },
-          { label: "Area expansion", tex: "\\Delta A = A_0 \\cdot 2\\alpha \\cdot \\Delta T", jee: true, cet: true },
-          { label: "Volume expansion", tex: "\\Delta V = V_0 \\gamma \\Delta T", jee: true, cet: true, important: true },
-          { label: "Relation", tex: "\\gamma = 3\\alpha = \\frac{3}{2}\\beta", jee: true, cet: true, important: true },
-        ],
-        notes: ["α: linear, β: areal, γ: volume coefficient", "For liquids: only volume expansion relevant", "Real expansion of liquid = apparent + expansion of container"],
-        mistakes: ["Using linear formula for volume", "Forgetting real vs apparent expansion"],
-        tricks: ["γ = 3α — always: remember 1:2:3 ratio for α:β:γ"],
-      },
-      {
-        title: "Calorimetry",
-        formulas: [
-          { label: "Heat absorbed/released", tex: "Q = mc\\Delta T", jee: true, cet: true, important: true },
-          { label: "Latent heat", tex: "Q = mL", jee: true, cet: true },
-          { label: "Newton's law of cooling", tex: "\\frac{dT}{dt} = -k(T - T_0)", jee: true, cet: true },
-          { label: "Wien's displacement law", tex: "\\lambda_m T = b = 2.898 \\times 10^{-3} \\text{ m·K}", jee: true, cet: true },
-          { label: "Stefan's law", tex: "E = \\sigma T^4", jee: true, cet: true },
-          { label: "Stefan-Boltzmann constant", tex: "\\sigma = 5.67 \\times 10^{-8} \\text{ W m}^{-2} \\text{K}^{-4}", jee: true, cet: false },
-        ],
-        notes: [
-          "Specific heat of water = 4200 J/kg·K",
-          "Latent heat of fusion of ice = 336 kJ/kg",
-          "Latent heat of vaporization of water = 2260 kJ/kg",
-          "Perfect blackbody: emissivity e = 1",
-        ],
-        mistakes: ["Using wrong unit for temperature (°C vs K in Stefan/Wien)"],
-        tricks: ["Wien: hotter object → smaller λ_max → bluer color"],
-      },
-    ],
-  },
+  { id: "mechanics", title: "Mechanics", tags: ["JEE","CET"], sections: [
+    { title: "Kinematics", formulas: [
+      { label: "1st equation", tex: "v = u + at", jee:true, cet:true },
+      { label: "2nd equation", tex: "s = ut + \\frac{1}{2}at^2", jee:true, cet:true },
+      { label: "3rd equation", tex: "v^2 = u^2 + 2as", jee:true, cet:true },
+      { label: "nth second", tex: "s_n = u + \\frac{a(2n-1)}{2}", jee:true, cet:false },
+      { label: "Projectile range", tex: "R = \\frac{u^2 \\sin 2\\theta}{g}", jee:true, cet:true, important:true },
+      { label: "Max height", tex: "H = \\frac{u^2 \\sin^2\\theta}{2g}", jee:true, cet:true },
+      { label: "Time of flight", tex: "T = \\frac{2u\\sin\\theta}{g}", jee:true, cet:true },
+      { label: "Max range (θ=45°)", tex: "R_{max} = \\frac{u^2}{g}", jee:true, cet:true, important:true },
+    ], notes:["At max height: v_y=0, v_x=ucosθ","Same R for θ and (90°−θ)","g ≈ 10 m/s² for CET"], mistakes:["Confusing displacement and distance in nth second"], tricks:["R is maximum at 45°"] },
+    { title: "Newton's Laws", formulas: [
+      { label: "2nd Law", tex: "\\vec{F} = m\\vec{a}", jee:true, cet:true, important:true },
+      { label: "Weight", tex: "W = mg", jee:true, cet:true },
+      { label: "Kinetic friction", tex: "f_k = \\mu_k N", jee:true, cet:true },
+      { label: "Static friction", tex: "f_s \\leq \\mu_s N", jee:true, cet:true },
+      { label: "Banking angle", tex: "\\tan\\theta = \\frac{v^2}{rg}", jee:true, cet:true },
+      { label: "Pseudo force", tex: "F_{pseudo} = -ma_0", jee:true, cet:false },
+    ], notes:["μs > μk always","N ≠ mg on inclined/accelerating surfaces"], mistakes:["Ignoring pseudo force in accelerating frames"], tricks:["Connected blocks: a=F/(m₁+m₂), T=m₂a"] },
+    { title: "Work, Energy & Power", formulas: [
+      { label: "Work done", tex: "W = Fd\\cos\\theta", jee:true, cet:true, important:true },
+      { label: "Kinetic energy", tex: "KE = \\frac{1}{2}mv^2", jee:true, cet:true },
+      { label: "Work-energy theorem", tex: "W_{net} = \\Delta KE", jee:true, cet:true, important:true },
+      { label: "Gravitational PE", tex: "PE = mgh", jee:true, cet:true },
+      { label: "Spring PE", tex: "U = \\frac{1}{2}kx^2", jee:true, cet:true },
+      { label: "Power", tex: "P = \\frac{W}{t} = \\vec{F}\\cdot\\vec{v}", jee:true, cet:true },
+    ], notes:["1 kWh = 3.6×10⁶ J","Only ΔPE matters, not reference"], mistakes:["Wrong angle in W=Fdcosθ","Friction does negative work"], tricks:["Reference point for PE is arbitrary"] },
+    { title: "Momentum & Collisions", formulas: [
+      { label: "Momentum", tex: "\\vec{p} = m\\vec{v}", jee:true, cet:true },
+      { label: "Impulse", tex: "J = F\\Delta t = \\Delta p", jee:true, cet:true },
+      { label: "Restitution", tex: "e = \\frac{v_2-v_1}{u_1-u_2}", jee:true, cet:true, important:true },
+      { label: "Perfectly inelastic", tex: "m_1u_1+m_2u_2=(m_1+m_2)v", jee:true, cet:true },
+    ], notes:["e=1: elastic, e=0: perfectly inelastic","Momentum conserved if no external force"], mistakes:["Confusing e formula direction"], tricks:["Equal masses elastic collision: velocities swap"] },
+    { title: "Rotational Motion", formulas: [
+      { label: "Torque", tex: "\\tau = r \\times F = I\\alpha", jee:true, cet:true, important:true },
+      { label: "Angular momentum", tex: "L = I\\omega", jee:true, cet:true },
+      { label: "Rotational KE", tex: "KE_{rot} = \\frac{1}{2}I\\omega^2", jee:true, cet:true },
+      { label: "MI: rod (center)", tex: "I = \\frac{ML^2}{12}", jee:true, cet:true },
+      { label: "MI: disk", tex: "I = \\frac{MR^2}{2}", jee:true, cet:true },
+      { label: "MI: ring", tex: "I = MR^2", jee:true, cet:true },
+      { label: "MI: solid sphere", tex: "I = \\frac{2}{5}MR^2", jee:true, cet:true, important:true },
+      { label: "MI: hollow sphere", tex: "I = \\frac{2}{3}MR^2", jee:true, cet:true },
+      { label: "Parallel axis", tex: "I = I_{cm} + Md^2", jee:true, cet:true, important:true },
+      { label: "Perpendicular axis", tex: "I_z = I_x + I_y", jee:true, cet:true },
+      { label: "Rolling condition", tex: "v = R\\omega", jee:true, cet:true },
+    ], notes:["Perp. axis: 2D laminas only","Hollow > Solid: more MI for same shape"], mistakes:["Applying perp. axis to 3D bodies"], tricks:["Rolling total KE = ½mv² + ½Iω²"] },
+    { title: "Gravitation", formulas: [
+      { label: "Newton's gravitation", tex: "F = G\\frac{m_1 m_2}{r^2}", jee:true, cet:true, important:true },
+      { label: "Surface gravity", tex: "g = \\frac{GM}{R^2}", jee:true, cet:true },
+      { label: "Escape velocity", tex: "v_e = \\sqrt{2gR}", jee:true, cet:true, important:true },
+      { label: "Orbital velocity", tex: "v_0 = \\sqrt{\\frac{GM}{r}}", jee:true, cet:true },
+      { label: "Orbital period", tex: "T = 2\\pi\\sqrt{\\frac{r^3}{GM}}", jee:true, cet:true },
+      { label: "Kepler's 3rd law", tex: "T^2 \\propto r^3", jee:true, cet:true, important:true },
+      { label: "Grav. PE", tex: "U = -\\frac{GMm}{r}", jee:true, cet:true },
+      { label: "g at height h", tex: "g_h = g\\left(1-\\frac{2h}{R}\\right)", jee:true, cet:true },
+      { label: "g at depth d", tex: "g_d = g\\left(1-\\frac{d}{R}\\right)", jee:true, cet:true },
+    ], notes:["G=6.67×10⁻¹¹ N m²/kg²","vₑ≈11.2 km/s, v₀≈7.9 km/s","g=0 at Earth's center"], mistakes:["r from center vs surface","U is always negative"], tricks:["vₑ = √2·v₀ near surface"] },
+  ]},
+  { id: "shm", title: "SHM", tags: ["JEE","CET"], sections: [
+    { title: "SHM Fundamentals", formulas: [
+      { label: "SHM condition", tex: "a = -\\omega^2 x", jee:true, cet:true, important:true },
+      { label: "Displacement", tex: "x = A\\sin(\\omega t + \\phi)", jee:true, cet:true },
+      { label: "Velocity", tex: "v = \\omega\\sqrt{A^2-x^2}", jee:true, cet:true, important:true },
+      { label: "Angular frequency", tex: "\\omega = \\frac{2\\pi}{T}", jee:true, cet:true },
+      { label: "Pendulum period", tex: "T = 2\\pi\\sqrt{\\frac{l}{g}}", jee:true, cet:true, important:true },
+      { label: "Spring-mass period", tex: "T = 2\\pi\\sqrt{\\frac{m}{k}}", jee:true, cet:true, important:true },
+      { label: "KE in SHM", tex: "KE = \\frac{1}{2}m\\omega^2(A^2-x^2)", jee:true, cet:true },
+      { label: "PE in SHM", tex: "PE = \\frac{1}{2}m\\omega^2 x^2", jee:true, cet:true },
+      { label: "Total energy", tex: "E = \\frac{1}{2}m\\omega^2 A^2", jee:true, cet:true, important:true },
+      { label: "Springs series", tex: "\\frac{1}{k_{eff}}=\\frac{1}{k_1}+\\frac{1}{k_2}", jee:true, cet:true },
+      { label: "Springs parallel", tex: "k_{eff}=k_1+k_2", jee:true, cet:true },
+    ], notes:["x=0: KE max, PE=0","x=A: KE=0, PE max","Total E is constant","Pendulum T: independent of mass & amplitude"], mistakes:["T=2π√(l/g) only for small angles"], tricks:["v_max=Aω at x=0; a_max=Aω² at x=±A"] },
+  ]},
+  { id: "waves", title: "Waves & Sound", tags: ["JEE","CET"], sections: [
+    { title: "Wave Properties", formulas: [
+      { label: "Wave speed", tex: "v = f\\lambda", jee:true, cet:true },
+      { label: "Speed in string", tex: "v = \\sqrt{\\frac{T}{\\mu}}", jee:true, cet:true, important:true },
+      { label: "Speed of sound", tex: "v = \\sqrt{\\frac{\\gamma P}{\\rho}}", jee:true, cet:true },
+      { label: "Sound at 0°C", tex: "v_0 = 332\\text{ m/s}", jee:true, cet:true },
+    ], notes:["μ = mass per unit length","γ=1.4 for air","v rises ~0.6 m/s per °C"], mistakes:["Newton's formula misses γ"], tricks:["v∝√T for string; v∝√T for gas (T in Kelvin)"] },
+    { title: "Standing Waves", formulas: [
+      { label: "String nth harmonic", tex: "f_n = \\frac{n}{2L}\\sqrt{\\frac{T}{\\mu}}", jee:true, cet:true, important:true },
+      { label: "Open pipe nth", tex: "f_n = \\frac{nv}{2L}", jee:true, cet:true },
+      { label: "Closed pipe nth (odd)", tex: "f_n = \\frac{(2n-1)v}{4L}", jee:true, cet:true, important:true },
+      { label: "Beat frequency", tex: "f_{beat} = |f_1 - f_2|", jee:true, cet:true },
+      { label: "Doppler effect", tex: "f' = f\\frac{v \\pm v_o}{v \\mp v_s}", jee:true, cet:true, important:true },
+    ], notes:["Closed pipe: only odd harmonics","Open pipe: all harmonics","Doppler: + numerator when observer→source"], mistakes:["Wrong Doppler sign","Open vs closed pipe confusion"], tricks:["Numerator sign = observer direction; denominator opposite"] },
+  ]},
+  { id: "optics", title: "Ray Optics", tags: ["JEE","CET"], sections: [
+    { title: "Mirrors & Lenses", formulas: [
+      { label: "Mirror formula", tex: "\\frac{1}{f}=\\frac{1}{v}+\\frac{1}{u}", jee:true, cet:true, important:true },
+      { label: "Mirror magnification", tex: "m = -\\frac{v}{u}", jee:true, cet:true },
+      { label: "Snell's law", tex: "n_1\\sin\\theta_1 = n_2\\sin\\theta_2", jee:true, cet:true, important:true },
+      { label: "Critical angle", tex: "\\sin C = \\frac{1}{n}", jee:true, cet:true },
+      { label: "Lens formula", tex: "\\frac{1}{f}=\\frac{1}{v}-\\frac{1}{u}", jee:true, cet:true, important:true },
+      { label: "Lensmaker's", tex: "\\frac{1}{f}=(n-1)\\left(\\frac{1}{R_1}-\\frac{1}{R_2}\\right)", jee:true, cet:true },
+      { label: "Lens power", tex: "P = \\frac{1}{f(\\text{m})}", jee:true, cet:true },
+      { label: "Lenses in contact", tex: "P = P_1 + P_2", jee:true, cet:true },
+    ], notes:["Distances measured from pole/optical center","n_glass≈1.5, n_water=1.33"], mistakes:["Wrong sign in lens formula","Confusing mirror and lens formulae"], tricks:["Lens: v−u; Mirror: v+u in denominator"] },
+    { title: "Prism & Wave Optics", formulas: [
+      { label: "Prism min deviation", tex: "n = \\frac{\\sin\\frac{A+\\delta_m}{2}}{\\sin\\frac{A}{2}}", jee:true, cet:true, important:true },
+      { label: "Small angle prism", tex: "\\delta = (n-1)A", jee:true, cet:true },
+      { label: "YDSE fringe width", tex: "\\beta = \\frac{\\lambda D}{d}", jee:true, cet:true, important:true },
+      { label: "Constructive", tex: "\\Delta x = n\\lambda", jee:true, cet:true },
+      { label: "Destructive", tex: "\\Delta x = (2n-1)\\frac{\\lambda}{2}", jee:true, cet:true },
+      { label: "Malus's law", tex: "I = I_0\\cos^2\\theta", jee:true, cet:true, important:true },
+      { label: "Brewster's law", tex: "\\tan i_B = n", jee:true, cet:true },
+    ], notes:["VIBGYOR: violet bends most","YDSE: d=slit sep, D=screen dist","Brewster: reflected ray fully polarized"], mistakes:["Confusing d and D in fringe formula"], tricks:["β∝λ: red fringes wider than violet"] },
+  ]},
+  { id: "thermal", title: "Thermal Physics", tags: ["JEE","CET"], sections: [
+    { title: "Thermal Expansion", formulas: [
+      { label: "Linear expansion", tex: "\\Delta L = L_0\\alpha\\Delta T", jee:true, cet:true },
+      { label: "Volume expansion", tex: "\\Delta V = V_0\\gamma\\Delta T", jee:true, cet:true, important:true },
+      { label: "γ = 3α relation", tex: "\\gamma = 3\\alpha = \\frac{3}{2}\\beta", jee:true, cet:true, important:true },
+    ], notes:["α:β:γ = 1:2:3","For liquids: only volume expansion"], mistakes:["Using linear formula for volume"], tricks:["Remember 1:2:3 ratio for α:β:γ"] },
+    { title: "Calorimetry & Radiation", formulas: [
+      { label: "Heat absorbed", tex: "Q = mc\\Delta T", jee:true, cet:true, important:true },
+      { label: "Latent heat", tex: "Q = mL", jee:true, cet:true },
+      { label: "Newton's cooling", tex: "\\frac{dT}{dt} = -k(T-T_0)", jee:true, cet:true },
+      { label: "Wien's law", tex: "\\lambda_m T = 2.898\\times10^{-3}\\text{ m·K}", jee:true, cet:true },
+      { label: "Stefan's law", tex: "E = \\sigma T^4", jee:true, cet:true },
+    ], notes:["c_water=4200 J/kg·K","L_fusion ice=336 kJ/kg","Use T in Kelvin for Stefan/Wien"], mistakes:["°C instead of K in Stefan/Wien"], tricks:["Hotter object → smaller λ_max → bluer"] },
+  ]},
+  { id: "fluids", title: "Fluid Mechanics", tags: ["JEE","CET"], sections: [
+    { title: "Pressure & Buoyancy", formulas: [
+      { label: "Hydrostatic pressure", tex: "P = P_0 + \\rho gh", jee:true, cet:true, important:true },
+      { label: "Buoyancy", tex: "F_b = \\rho_{fluid}\\cdot V_{sub}\\cdot g", jee:true, cet:true, important:true },
+      { label: "Pascal's law", tex: "\\frac{F_1}{A_1}=\\frac{F_2}{A_2}", jee:true, cet:true },
+    ], notes:["P depends only on depth, not container shape","Floating: weight = buoyancy"], mistakes:["Using total volume instead of submerged"], tricks:["Fractional depth submerged = ρ_obj/ρ_fluid"] },
+    { title: "Flow", formulas: [
+      { label: "Continuity", tex: "A_1v_1 = A_2v_2", jee:true, cet:true, important:true },
+      { label: "Bernoulli", tex: "P + \\frac{1}{2}\\rho v^2 + \\rho gh = \\text{const}", jee:true, cet:true, important:true },
+      { label: "Torricelli", tex: "v = \\sqrt{2gh}", jee:true, cet:true },
+      { label: "Terminal velocity", tex: "v_t = \\frac{2r^2(\\rho-\\sigma)g}{9\\eta}", jee:true, cet:true, important:true },
+      { label: "Stokes' law", tex: "F = 6\\pi\\eta rv", jee:true, cet:true },
+    ], notes:["Bernoulli: ideal fluid only","Higher velocity → lower pressure"], mistakes:["Applying Bernoulli to viscous flow"], tricks:["vₜ ∝ r²: double radius → 4× terminal vel"] },
+  ]},
+  { id: "surface", title: "Surface Tension", tags: ["CET","JEE"], sections: [
+    { title: "Surface Tension Formulas", formulas: [
+      { label: "Surface tension", tex: "T = \\frac{F}{l}", jee:true, cet:true },
+      { label: "Excess pressure (bubble)", tex: "\\Delta P = \\frac{4T}{r}", jee:true, cet:true, important:true },
+      { label: "Excess pressure (drop)", tex: "\\Delta P = \\frac{2T}{r}", jee:true, cet:true, important:true },
+      { label: "Capillary rise", tex: "h = \\frac{2T\\cos\\theta}{r\\rho g}", jee:true, cet:true, important:true },
+    ], notes:["Bubble: 2 surfaces → 4T/r","Drop: 1 surface → 2T/r","Mercury: θ>90° → capillary fall"], mistakes:["Using 2T/r for soap bubble (should be 4T/r)"], tricks:["Bubble = 2× pressure of drop"] },
+  ]},
 ];
 
 const CHEMISTRY_DATA = [
-  {
-    id: "mole",
-    title: "Mole Concept",
-    tags: ["JEE", "CET", "NCERT"],
-    sections: [
-      {
-        title: "Fundamental Relations",
-        formulas: [
-          { label: "Number of moles", tex: "n = \\frac{m}{M} = \\frac{N}{N_A}", jee: true, cet: true, important: true },
-          { label: "Avogadro's number", tex: "N_A = 6.022 \\times 10^{23}", jee: true, cet: true },
-          { label: "Molar volume (STP)", tex: "V_m = 22.4 \\text{ L/mol}", jee: true, cet: true },
-          { label: "Molarity", tex: "M = \\frac{\\text{moles of solute}}{\\text{volume of solution (L)}}", jee: true, cet: true, important: true },
-          { label: "Molality", tex: "m = \\frac{\\text{moles of solute}}{\\text{mass of solvent (kg)}}", jee: true, cet: true },
-          { label: "Mole fraction", tex: "\\chi_A = \\frac{n_A}{n_A + n_B}", jee: true, cet: true },
-          { label: "Normality", tex: "N = M \\times n_{factor}", jee: true, cet: true },
-          { label: "% w/v", tex: "\\%\\frac{w}{v} = \\frac{\\text{mass of solute (g)}}{\\text{vol. of solution (mL)}} \\times 100", jee: false, cet: true },
-        ],
-        notes: [
-          "STP (IUPAC 2010): 0°C, 1 bar → 22.7 L/mol",
-          "Old STP: 0°C, 1 atm → 22.4 L/mol (commonly used in problems)",
-          "n-factor for acids = basicity; for bases = acidity; for redox = change in oxidation state",
-        ],
-        mistakes: ["Using mL instead of L for molarity", "Confusing molarity with molality"],
-        tricks: ["Moles = given grams / molar mass — always first step"],
-      },
-      {
-        title: "Limiting Reagent & Yield",
-        formulas: [
-          { label: "% yield", tex: "\\% \\text{ yield} = \\frac{\\text{actual yield}}{\\text{theoretical yield}} \\times 100", jee: true, cet: true },
-          { label: "% purity", tex: "\\% \\text{ purity} = \\frac{\\text{pure substance}}{\\text{total mass}} \\times 100", jee: false, cet: true },
-        ],
-        notes: [
-          "Limiting reagent: gives least moles of product",
-          "Excess reagent: left over after reaction",
-        ],
-        mistakes: ["Forgetting to find limiting reagent before calculating product"],
-        tricks: ["Divide moles of each reactant by stoichiometric coefficient → smallest value = limiting reagent"],
-      },
-    ],
-  },
-  {
-    id: "atomic",
-    title: "Atomic Structure",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Bohr Model & Hydrogen Atom",
-        formulas: [
-          { label: "Energy of nth orbit", tex: "E_n = -\\frac{13.6}{n^2} \\text{ eV}", jee: true, cet: true, important: true },
-          { label: "Radius of nth orbit", tex: "r_n = 0.529 \\times n^2 \\text{ Å (H atom)}", jee: true, cet: true },
-          { label: "Velocity in nth orbit", tex: "v_n = \\frac{2.18 \\times 10^6}{n} \\text{ m/s}", jee: true, cet: false },
-          { label: "Wave number (Rydberg)", tex: "\\bar{\\nu} = R_H\\left(\\frac{1}{n_1^2} - \\frac{1}{n_2^2}\\right)", jee: true, cet: true, important: true },
-          { label: "Rydberg constant", tex: "R_H = 1.097 \\times 10^7 \\text{ m}^{-1}", jee: true, cet: false },
-          { label: "de Broglie wavelength", tex: "\\lambda = \\frac{h}{mv} = \\frac{h}{p}", jee: true, cet: true, important: true },
-          { label: "Heisenberg uncertainty", tex: "\\Delta x \\cdot \\Delta p \\geq \\frac{h}{4\\pi}", jee: true, cet: true },
-          { label: "Photoelectric effect", tex: "E = h\\nu = \\phi + KE_{max}", jee: true, cet: true, important: true },
-        ],
-        notes: [
-          "Series: Lyman (UV, n₁=1), Balmer (visible, n₁=2), Paschen (IR, n₁=3), Brackett (n₁=4), Pfund (n₁=5)",
-          "h = 6.626 × 10⁻³⁴ J·s (Planck's constant)",
-          "Stopping potential: eV₀ = KE_max",
-          "Threshold frequency: ν₀ = φ/h",
-        ],
-        mistakes: ["Negative sign in energy: E₁ = −13.6 eV, not positive", "Confusing wave number and wavelength"],
-        tricks: ["Energy difference → photon energy → wavelength λ = hc/E"],
-      },
-      {
-        title: "Quantum Numbers & Electronic Config",
-        formulas: [
-          { label: "Max electrons in shell", tex: "= 2n^2", jee: true, cet: true },
-          { label: "Max electrons in subshell", tex: "= 2(2l+1)", jee: true, cet: true },
-          { label: "Number of orbitals in subshell", tex: "= 2l+1", jee: true, cet: true },
-        ],
-        notes: [
-          "n: principal (1,2,3...), l: azimuthal (0 to n−1), m: magnetic (−l to +l), s: spin (±½)",
-          "l = 0(s), 1(p), 2(d), 3(f)",
-          "Aufbau: fill lowest energy first; 1s 2s 2p 3s 3p 4s 3d 4p...",
-          "Hund's rule: maximize unpaired electrons in degenerate orbitals",
-          "Pauli exclusion: no two electrons have same 4 quantum numbers",
-          "Exception: Cr = [Ar]3d⁵4s¹; Cu = [Ar]3d¹⁰4s¹ (half-filled/fully-filled stability)",
-        ],
-        mistakes: ["Writing Cr as [Ar]3d⁴4s² (incorrect)", "Forgetting exceptions for Cr, Cu, Mo, Ag"],
-        tricks: ["(n+l) rule: lower (n+l) fills first; same (n+l) → lower n fills first"],
-      },
-    ],
-  },
-  {
-    id: "periodic",
-    title: "Periodic Table",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Periodic Trends",
-        formulas: [],
-        notes: [
-          "Atomic radius: increases down group, decreases across period (left to right)",
-          "Ionization energy: decreases down group, increases across period",
-          "IE exception: N > O (half-filled 2p is extra stable)",
-          "Electron affinity: increases across period (F exception: F < Cl due to small size)",
-          "Electronegativity: F is highest (4.0 Pauling scale)",
-          "Metallic character: increases down group, decreases across period",
-        ],
-        mistakes: ["Saying F has highest EA (actually Cl has higher EA than F)", "Forgetting IE anomaly at Group 15 vs 16"],
-        tricks: ["Smallest atom: He; Largest atom: Fr; Most electronegative: F"],
-      },
-    ],
-  },
-  {
-    id: "bonding",
-    title: "Chemical Bonding",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "VSEPR & Hybridization",
-        formulas: [
-          { label: "Formal charge", tex: "FC = V - N - \\frac{B}{2}", jee: true, cet: true },
-          { label: "Bond order", tex: "BO = \\frac{\\text{bonding e}^- - \\text{antibonding e}^-}{2}", jee: true, cet: true },
-          { label: "Dipole moment", tex: "\\mu = q \\times d", jee: true, cet: true },
-        ],
-        notes: [
-          "VSEPR: lone pairs cause more repulsion than bond pairs",
-          "sp: linear (180°), sp²: trigonal planar (120°), sp³: tetrahedral (109.5°)",
-          "sp³d: trigonal bipyramidal, sp³d²: octahedral",
-          "Bond order ↑ → bond length ↓, bond energy ↑",
-          "Examples: BF₃ (sp², no dipole), NH₃ (sp³, has dipole), H₂O (sp³, bent)",
-          "CO₂: linear, nonpolar despite polar bonds",
-        ],
-        mistakes: ["Predicting bent shape for CO₂ (it's linear)", "Ignoring lone pairs in hybridization count"],
-        tricks: ["Hybridization = ½(V + bonds + lone pairs - charge) for central atom"],
-      },
-    ],
-  },
-  {
-    id: "thermo_chem",
-    title: "Thermodynamics",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Laws & Key Equations",
-        formulas: [
-          { label: "First law", tex: "\\Delta U = q + w = q - P\\Delta V", jee: true, cet: true, important: true },
-          { label: "Enthalpy", tex: "H = U + PV \\Rightarrow \\Delta H = \\Delta U + \\Delta n_g RT", jee: true, cet: true, important: true },
-          { label: "Gibbs free energy", tex: "\\Delta G = \\Delta H - T\\Delta S", jee: true, cet: true, important: true },
-          { label: "Spontaneity", tex: "\\Delta G < 0 \\text{ (spontaneous)}", jee: true, cet: true },
-          { label: "Entropy change", tex: "\\Delta S = \\frac{q_{rev}}{T}", jee: true, cet: false },
-          { label: "Hess's law", tex: "\\Delta H_{rxn} = \\sum \\Delta H_f(\\text{products}) - \\sum \\Delta H_f(\\text{reactants})", jee: true, cet: true, important: true },
-          { label: "Bond enthalpy", tex: "\\Delta H = \\sum \\text{bonds broken} - \\sum \\text{bonds formed}", jee: true, cet: true },
-          { label: "Work done by gas", tex: "w = -P_{ext}\\Delta V", jee: true, cet: true },
-          { label: "Cp - Cv", tex: "C_p - C_v = R", jee: true, cet: false },
-        ],
-        notes: [
-          "ΔH < 0: exothermic; ΔH > 0: endothermic",
-          "Standard state: 25°C, 1 bar",
-          "Δng = moles of gaseous products − moles of gaseous reactants",
-          "ΔG = 0 at equilibrium",
-          "Third law: entropy of perfect crystal at 0 K = 0",
-        ],
-        mistakes: ["Sign of work: w = −PΔV (work done BY system)", "Forgetting to count only gaseous moles for Δng"],
-        tricks: ["ΔG < 0, ΔH < 0, ΔS > 0: always spontaneous"],
-      },
-    ],
-  },
-  {
-    id: "equilibrium",
-    title: "Chemical Equilibrium",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Equilibrium Constants",
-        formulas: [
-          { label: "Kc expression", tex: "K_c = \\frac{[C]^c[D]^d}{[A]^a[B]^b}", jee: true, cet: true, important: true },
-          { label: "Kp from Kc", tex: "K_p = K_c(RT)^{\\Delta n_g}", jee: true, cet: true, important: true },
-          { label: "Relation with ΔG°", tex: "\\Delta G^\\circ = -RT\\ln K", jee: true, cet: false },
-          { label: "Reaction quotient", tex: "Q_c < K_c: \\text{ forward favored}", jee: true, cet: true },
-          { label: "Degree of dissociation (α)", tex: "K_c = \\frac{c\\alpha^2}{1-\\alpha} \\approx c\\alpha^2 \\text{ (if } \\alpha \\ll 1)", jee: true, cet: true },
-        ],
-        notes: [
-          "Le Chatelier's principle: system shifts to counteract change",
-          "Increasing pressure: favors fewer moles of gas side",
-          "Adding inert gas at constant V: no effect on equilibrium",
-          "K depends only on temperature, not concentrations",
-          "Kp = Kc when Δng = 0",
-        ],
-        mistakes: ["Including solids/pure liquids in K expression", "Confusing Q and K"],
-        tricks: ["Kp > Kc when Δng > 0; Kp < Kc when Δng < 0"],
-      },
-    ],
-  },
-  {
-    id: "ionic_eq",
-    title: "Ionic Equilibrium",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "pH, Buffers & Solubility",
-        formulas: [
-          { label: "pH definition", tex: "\\text{pH} = -\\log[\\text{H}^+]", jee: true, cet: true, important: true },
-          { label: "pOH definition", tex: "\\text{pOH} = -\\log[\\text{OH}^-]", jee: true, cet: true },
-          { label: "pH + pOH at 25°C", tex: "\\text{pH} + \\text{pOH} = 14", jee: true, cet: true, important: true },
-          { label: "Kw at 25°C", tex: "K_w = [H^+][OH^-] = 10^{-14}", jee: true, cet: true },
-          { label: "Weak acid pH", tex: "\\text{pH} = \\frac{1}{2}(\\text{p}K_a - \\log c)", jee: true, cet: true },
-          { label: "Henderson-Hasselbalch", tex: "\\text{pH} = \\text{p}K_a + \\log\\frac{[\\text{salt}]}{[\\text{acid}]}", jee: true, cet: true, important: true },
-          { label: "Solubility product", tex: "K_{sp} = [A^+]^m [B^-]^n", jee: true, cet: true, important: true },
-          { label: "Common ion effect", tex: "\\text{Adding common ion} \\Rightarrow K_{sp} \\downarrow \\text{ solubility}", jee: true, cet: true },
-        ],
-        notes: [
-          "pH < 7: acidic; pH > 7: basic; pH = 7: neutral (at 25°C)",
-          "Buffer: resists change in pH (weak acid + its salt)",
-          "Degree of hydrolysis: h = √(Kh/c)",
-          "Salt of weak acid + strong base: pH > 7",
-          "Salt of strong acid + weak base: pH < 7",
-        ],
-        mistakes: ["Saying neutral water always has pH=7 (true only at 25°C)", "Wrong formula for solubility from Ksp"],
-        tricks: ["pH of 10⁻⁸ M HCl ≈ 7 (contribution of water, not less than 7)"],
-      },
-    ],
-  },
-  {
-    id: "redox",
-    title: "Redox Reactions",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Oxidation States & Balancing",
-        formulas: [
-          { label: "n-factor (redox)", tex: "n = \\text{change in oxidation state} \\times \\text{atoms undergoing change}", jee: true, cet: true, important: true },
-          { label: "Equivalents balance", tex: "n_1 \\times N_1 = n_2 \\times N_2", jee: true, cet: true },
-          { label: "n-factor for KMnO4 (acidic)", tex: "n = 5 \\text{ (Mn: +7 → +2)}", jee: true, cet: true },
-          { label: "n-factor for KMnO4 (neutral)", tex: "n = 3 \\text{ (Mn: +7 → +4)}", jee: true, cet: true },
-          { label: "n-factor for KMnO4 (basic)", tex: "n = 1 \\text{ (Mn: +7 → +6)}", jee: true, cet: true },
-          { label: "n-factor for K2Cr2O7", tex: "n = 6 \\text{ (Cr: +6 → +3)}", jee: true, cet: true },
-        ],
-        notes: [
-          "Oxidation state rules: O = −2 (except peroxide: −1), H = +1 (except hydrides: −1), F = −1",
-          "Sum of oxidation states in neutral compound = 0",
-          "Sum of oxidation states in ion = charge of ion",
-        ],
-        mistakes: ["Wrong OS for oxygen in peroxides", "Missing disproportionation reactions"],
-        tricks: ["Oxidation = loss of electrons (OIL); Reduction = gain of electrons (RIG)"],
-      },
-    ],
-  },
-  {
-    id: "coord",
-    title: "Coordination Compounds",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Nomenclature & VBT",
-        formulas: [],
-        notes: [
-          "IUPAC: anionic ligands first (alphabetical), then cationic; metal name + oxidation state",
-          "Ligand denticity: mono (H₂O, NH₃, Cl⁻), bi (en, ox²⁻), poly (EDTA: hexadentate)",
-          "VBT hybridization: d²sp³ = inner orbital (octahedral, low spin), sp³d² = outer orbital (high spin)",
-          "[Co(NH₃)₆]³⁺: d²sp³, diamagnetic | [CoF₆]³⁻: sp³d², paramagnetic",
-          "EAN rule: effective atomic number = metal electrons + ligand electrons",
-          "Crystal field: Δ₀ determines high/low spin in octahedral complexes",
-          "Spectrochemical series (weak to strong field): I⁻ < Br⁻ < Cl⁻ < F⁻ < OH⁻ < C₂O₄²⁻ < H₂O < NH₃ < en < CN⁻ < CO",
-          "CFSE (octahedral, d⁶ low spin): −2.4Δ₀",
-        ],
-        mistakes: ["Naming cation before anion in complex", "Confusing inner and outer orbital complexes"],
-        tricks: ["Strong field ligands: CO, CN⁻, en, NH₃ — cause low spin"],
-      },
-    ],
-  },
-  {
-    id: "goc",
-    title: "General Organic Chemistry (GOC)",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Electronic Effects",
-        formulas: [
-          { label: "Inductive effect order (+I)", tex: "\\text{Alkyl} > H > \\text{Halogens}", jee: true, cet: true },
-          { label: "Resonance stability (carbanion)", tex: "CH_2^- < \\text{allylic} < \\text{benzylic} < \\text{beside C=O}", jee: true, cet: true },
-        ],
-        notes: [
-          "+I groups (electron donating): −OR, −OH, −NHR, −NH₂, alkyl groups",
-          "−I groups (electron withdrawing): −NO₂, −CN, −COOH, −X (halogens)",
-          "+M groups: −OH, −OR, −NH₂, −X (donate by resonance)",
-          "−M groups: −NO₂, −CHO, −COOH, −C≡N (withdraw by resonance)",
-          "Carbocation stability: 3° > 2° > 1° > CH₃⁺; allylic > secondary",
-          "Free radical stability: 3° > 2° > 1°",
-          "Carbanion stability (reverse of carbocation): more substituents = less stable",
-          "Hyperconjugation: σ electrons of C−H delocalize into empty p orbital",
-        ],
-        mistakes: ["Confusing inductive and mesomeric effect magnitudes", "F: −I but +M (halogen paradox)"],
-        tricks: ["Stability of carbocation: more hyperconjugating H's → more stable"],
-      },
-    ],
-  },
-  {
-    id: "isomerism",
-    title: "Isomerism",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Structural & Stereoisomerism",
-        formulas: [
-          { label: "Degree of unsaturation (DBE)", tex: "DBE = \\frac{2C + 2 + N - H - X}{2}", jee: true, cet: true, important: true },
-        ],
-        notes: [
-          "Structural isomers: same molecular formula, different connectivity",
-          "Chain, position, functional group, ring-chain isomers",
-          "Geometrical (cis-trans): restricted rotation (double bonds, rings)",
-          "Optical isomerism: non-superimposable mirror images (enantiomers)",
-          "Chiral center: 4 different groups attached to carbon",
-          "Number of stereoisomers ≤ 2ⁿ where n = chiral centers",
-          "Meso compound: has chiral centers but internally compensated (optically inactive)",
-          "Enantiomers: same physical properties, opposite optical rotation",
-          "Diastereomers: different physical properties, not mirror images",
-          "R/S configuration: Cahn-Ingold-Prelog rules (by decreasing priority)",
-        ],
-        mistakes: ["Calling meso compound optically active", "Forgetting geometric isomerism in rings"],
-        tricks: ["DBE = 1: one double bond or ring; DBE = 4: benzene ring"],
-      },
-    ],
-  },
+  { id: "mole", title: "Mole Concept", tags: ["JEE","CET"], sections: [
+    { title: "Fundamental Relations", formulas: [
+      { label: "Moles", tex: "n = \\frac{m}{M} = \\frac{N}{N_A}", jee:true, cet:true, important:true },
+      { label: "Avogadro's number", tex: "N_A = 6.022\\times10^{23}", jee:true, cet:true },
+      { label: "Molar volume (STP)", tex: "V_m = 22.4\\text{ L/mol}", jee:true, cet:true },
+      { label: "Molarity", tex: "M = \\frac{n_{solute}}{V_{soln}(L)}", jee:true, cet:true, important:true },
+      { label: "Molality", tex: "m = \\frac{n_{solute}}{m_{solvent}(kg)}", jee:true, cet:true },
+      { label: "Mole fraction", tex: "\\chi_A = \\frac{n_A}{n_A+n_B}", jee:true, cet:true },
+      { label: "% yield", tex: "\\%yield = \\frac{actual}{theoretical}\\times100", jee:true, cet:true },
+    ], notes:["n-factor: acids=basicity, bases=acidity, redox=OS change","Moles always first step in stoichiometry"], mistakes:["mL instead of L for molarity"], tricks:["Limiting reagent: divide moles by stoich. coeff → smallest = LR"] },
+  ]},
+  { id: "atomic", title: "Atomic Structure", tags: ["JEE","CET"], sections: [
+    { title: "Bohr Model", formulas: [
+      { label: "Energy nth orbit", tex: "E_n = -\\frac{13.6}{n^2}\\text{ eV}", jee:true, cet:true, important:true },
+      { label: "Radius nth orbit", tex: "r_n = 0.529n^2\\text{ Å}", jee:true, cet:true },
+      { label: "Rydberg formula", tex: "\\bar{\\nu} = R_H\\left(\\frac{1}{n_1^2}-\\frac{1}{n_2^2}\\right)", jee:true, cet:true, important:true },
+      { label: "de Broglie", tex: "\\lambda = \\frac{h}{mv}", jee:true, cet:true, important:true },
+      { label: "Heisenberg", tex: "\\Delta x\\cdot\\Delta p \\geq \\frac{h}{4\\pi}", jee:true, cet:true },
+      { label: "Photoelectric", tex: "E = h\\nu = \\phi + KE_{max}", jee:true, cet:true, important:true },
+    ], notes:["Series: Lyman(UV), Balmer(visible), Paschen(IR)","h=6.626×10⁻³⁴ J·s"], mistakes:["E₁ = −13.6 eV (negative!)"], tricks:["Energy gap → photon: λ=hc/E"] },
+    { title: "Quantum Numbers", formulas: [
+      { label: "Max e⁻ in shell", tex: "= 2n^2", jee:true, cet:true },
+      { label: "Max e⁻ in subshell", tex: "= 2(2l+1)", jee:true, cet:true },
+      { label: "Orbitals in subshell", tex: "= 2l+1", jee:true, cet:true },
+    ], notes:["l=0(s),1(p),2(d),3(f)","Cr=[Ar]3d⁵4s¹; Cu=[Ar]3d¹⁰4s¹ (exceptions)","Aufbau: 1s 2s 2p 3s 3p 4s 3d 4p..."], mistakes:["Cr as [Ar]3d⁴4s² is wrong"], tricks:["(n+l) rule: lower n+l fills first"] },
+  ]},
+  { id: "thermo_chem", title: "Thermodynamics", tags: ["JEE","CET"], sections: [
+    { title: "Laws & Equations", formulas: [
+      { label: "First law", tex: "\\Delta U = q - P\\Delta V", jee:true, cet:true, important:true },
+      { label: "Enthalpy", tex: "\\Delta H = \\Delta U + \\Delta n_g RT", jee:true, cet:true, important:true },
+      { label: "Gibbs free energy", tex: "\\Delta G = \\Delta H - T\\Delta S", jee:true, cet:true, important:true },
+      { label: "Spontaneous", tex: "\\Delta G < 0", jee:true, cet:true },
+      { label: "Hess's law", tex: "\\Delta H_{rxn} = \\sum\\Delta H_f(prod) - \\sum\\Delta H_f(react)", jee:true, cet:true, important:true },
+      { label: "Bond enthalpy", tex: "\\Delta H = \\sum\\text{broken} - \\sum\\text{formed}", jee:true, cet:true },
+    ], notes:["ΔH<0: exothermic; ΔH>0: endothermic","Δng: gaseous moles only","ΔG=0 at equilibrium"], mistakes:["w=−PΔV (sign!)","Count only gaseous moles for Δng"], tricks:["ΔG<0, ΔH<0, ΔS>0: always spontaneous"] },
+  ]},
+  { id: "equilibrium", title: "Equilibrium", tags: ["JEE","CET"], sections: [
+    { title: "Equilibrium Constants", formulas: [
+      { label: "Kc", tex: "K_c = \\frac{[C]^c[D]^d}{[A]^a[B]^b}", jee:true, cet:true, important:true },
+      { label: "Kp from Kc", tex: "K_p = K_c(RT)^{\\Delta n_g}", jee:true, cet:true, important:true },
+      { label: "Degree of dissociation", tex: "K_c \\approx c\\alpha^2\\quad(\\alpha\\ll1)", jee:true, cet:true },
+    ], notes:["Le Chatelier: system counteracts change","↑P favors fewer moles of gas","K depends only on temperature"], mistakes:["Including solids/liquids in K"], tricks:["Kp>Kc when Δng>0; Kp<Kc when Δng<0"] },
+    { title: "Ionic Equilibrium", formulas: [
+      { label: "pH", tex: "\\text{pH} = -\\log[H^+]", jee:true, cet:true, important:true },
+      { label: "pH + pOH = 14", tex: "\\text{pH}+\\text{pOH}=14", jee:true, cet:true, important:true },
+      { label: "Kw", tex: "K_w = [H^+][OH^-] = 10^{-14}", jee:true, cet:true },
+      { label: "Henderson-Hasselbalch", tex: "\\text{pH}=\\text{p}K_a+\\log\\frac{[salt]}{[acid]}", jee:true, cet:true, important:true },
+      { label: "Ksp", tex: "K_{sp}=[A^+]^m[B^-]^n", jee:true, cet:true, important:true },
+    ], notes:["pH=7 neutral only at 25°C","Buffer: weak acid + its salt","Salt of weak acid + strong base: pH>7"], mistakes:["10⁻⁸ M HCl: pH≈7 (water contributes)"], tricks:["pH of 10⁻⁸ M HCl is NOT less than 7"] },
+  ]},
+  { id: "redox", title: "Redox", tags: ["JEE","CET"], sections: [
+    { title: "Oxidation States", formulas: [
+      { label: "n-factor (redox)", tex: "n = \\Delta OS \\times \\text{atoms changed}", jee:true, cet:true, important:true },
+      { label: "Equivalents", tex: "n_1 N_1 = n_2 N_2", jee:true, cet:true },
+      { label: "KMnO₄ (acidic) n=", tex: "5\\quad(Mn: +7\\to+2)", jee:true, cet:true },
+      { label: "KMnO₄ (neutral) n=", tex: "3\\quad(Mn: +7\\to+4)", jee:true, cet:true },
+      { label: "KMnO₄ (basic) n=", tex: "1\\quad(Mn: +7\\to+6)", jee:true, cet:true },
+      { label: "K₂Cr₂O₇ n=", tex: "6\\quad(Cr: +6\\to+3)", jee:true, cet:true },
+    ], notes:["O=−2 (peroxide: −1), H=+1 (hydride: −1), F=−1","Sum of OS = 0 in neutral compound"], mistakes:["O in peroxides is −1, not −2"], tricks:["OIL RIG: Oxidation Is Loss, Reduction Is Gain"] },
+  ]},
+  { id: "goc", title: "GOC & Isomerism", tags: ["JEE","CET"], sections: [
+    { title: "Electronic Effects", formulas: [
+      { label: "DBE (degree of unsaturation)", tex: "DBE = \\frac{2C+2+N-H-X}{2}", jee:true, cet:true, important:true },
+    ], notes: ["+I: alkyl, −OR, −OH, −NH₂ (electron donating)","−I: −NO₂, −CN, −COOH, halogens","Carbocation: 3°>2°>1°; allylic>secondary","Free radical: 3°>2°>1°","Carbanion: opposite to carbocation stability","F: −I but +M (halogen paradox)"], mistakes:["Confusing inductive and mesomeric effects"], tricks:["DBE=1: one π bond or ring; DBE=4: benzene"] },
+    { title: "Stereoisomerism", formulas: [], notes:["Geometric: restricted rotation (C=C, rings)","Optical: non-superimposable mirror images","Chiral center: 4 different groups on C","Meso: chiral centers but internally compensated → optically inactive","Stereoisomers ≤ 2ⁿ (n = chiral centers)","R/S: Cahn-Ingold-Prelog priority rules"], mistakes:["Meso compound is NOT optically active"], tricks:["Enantiomers: same physical prop, opposite optical rotation"] },
+  ]},
+  { id: "bonding", title: "Chemical Bonding", tags: ["JEE","CET"], sections: [
+    { title: "VSEPR & Hybridization", formulas: [
+      { label: "Formal charge", tex: "FC = V - N - \\frac{B}{2}", jee:true, cet:true },
+      { label: "Bond order (MO)", tex: "BO = \\frac{\\text{bonding}-\\text{antibonding}}{2}", jee:true, cet:true },
+      { label: "Dipole moment", tex: "\\mu = q\\times d", jee:true, cet:true },
+    ], notes:["sp: linear 180°, sp²: trigonal 120°, sp³: tetrahedral 109.5°","sp³d: trig. bipyramidal, sp³d²: octahedral","CO₂: linear, nonpolar despite polar bonds","Bond order↑ → bond length↓, bond energy↑"], mistakes:["CO₂ is linear, NOT bent"], tricks:["Hybridization = ½(V + bonds + lone pairs − charge)"] },
+  ]},
+  { id: "coord", title: "Coordination Chemistry", tags: ["JEE","CET"], sections: [
+    { title: "Nomenclature & Crystal Field", formulas: [], notes:["IUPAC: anionic ligands first (alphabetical), then metal+OS","Spectrochemical series (weak→strong): I⁻<Br⁻<Cl⁻<F⁻<OH⁻<H₂O<NH₃<en<CN⁻<CO","d²sp³: inner orbital (low spin, octahedral)","sp³d²: outer orbital (high spin)","[Co(NH₃)₆]³⁺: d²sp³, diamagnetic","[CoF₆]³⁻: sp³d², paramagnetic"], mistakes:["Naming cation before anion in complex"], tricks:["Strong field ligands: CO, CN⁻, en, NH₃ → low spin"] },
+  ]},
 ];
 
 const MATHEMATICS_DATA = [
-  {
-    id: "trigonometry",
-    title: "Trigonometry",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Fundamental Identities",
-        formulas: [
-          { label: "Pythagorean identity", tex: "\\sin^2\\theta + \\cos^2\\theta = 1", jee: true, cet: true, important: true },
-          { label: "tan identity", tex: "1 + \\tan^2\\theta = \\sec^2\\theta", jee: true, cet: true },
-          { label: "cot identity", tex: "1 + \\cot^2\\theta = \\csc^2\\theta", jee: true, cet: true },
-          { label: "sin(A±B)", tex: "\\sin(A \\pm B) = \\sin A\\cos B \\pm \\cos A\\sin B", jee: true, cet: true, important: true },
-          { label: "cos(A±B)", tex: "\\cos(A \\pm B) = \\cos A\\cos B \\mp \\sin A\\sin B", jee: true, cet: true, important: true },
-          { label: "tan(A+B)", tex: "\\tan(A+B) = \\frac{\\tan A + \\tan B}{1 - \\tan A \\tan B}", jee: true, cet: true },
-          { label: "tan(A-B)", tex: "\\tan(A-B) = \\frac{\\tan A - \\tan B}{1 + \\tan A \\tan B}", jee: true, cet: true },
-          { label: "Double angle: sin", tex: "\\sin 2A = 2\\sin A\\cos A", jee: true, cet: true, important: true },
-          { label: "Double angle: cos", tex: "\\cos 2A = \\cos^2 A - \\sin^2 A = 2\\cos^2 A - 1 = 1 - 2\\sin^2 A", jee: true, cet: true, important: true },
-          { label: "Double angle: tan", tex: "\\tan 2A = \\frac{2\\tan A}{1-\\tan^2 A}", jee: true, cet: true },
-          { label: "Half angle sin²", tex: "\\sin^2 A = \\frac{1 - \\cos 2A}{2}", jee: true, cet: true, important: true },
-          { label: "Half angle cos²", tex: "\\cos^2 A = \\frac{1 + \\cos 2A}{2}", jee: true, cet: true, important: true },
-          { label: "Product to sum: sin·cos", tex: "2\\sin A\\cos B = \\sin(A+B) + \\sin(A-B)", jee: true, cet: true },
-          { label: "Sum to product: sin+sin", tex: "\\sin C + \\sin D = 2\\sin\\frac{C+D}{2}\\cos\\frac{C-D}{2}", jee: true, cet: true, important: true },
-          { label: "Sum to product: cos+cos", tex: "\\cos C + \\cos D = 2\\cos\\frac{C+D}{2}\\cos\\frac{C-D}{2}", jee: true, cet: true },
-          { label: "Triple angle: sin", tex: "\\sin 3A = 3\\sin A - 4\\sin^3 A", jee: true, cet: true },
-          { label: "Triple angle: cos", tex: "\\cos 3A = 4\\cos^3 A - 3\\cos A", jee: true, cet: true },
-          { label: "Triple angle: tan", tex: "\\tan 3A = \\frac{3\\tan A - \\tan^3 A}{1 - 3\\tan^2 A}", jee: true, cet: false },
-        ],
-        notes: [
-          "ASTC rule: All positive (Q1), Sin positive (Q2), Tan positive (Q3), Cos positive (Q4)",
-          "sin is odd: sin(−θ) = −sinθ; cos is even: cos(−θ) = cosθ",
-          "sin 30° = 1/2, sin 45° = 1/√2, sin 60° = √3/2",
-          "Range: sin, cos ∈ [−1, 1]; tan, cot ∈ (−∞, ∞); sec, csc ∈ (−∞,−1]∪[1,∞)",
-        ],
-        mistakes: ["Wrong sign in cos(A−B) vs cos(A+B)", "Forgetting which quadrant determines sign"],
-        tricks: ["ASTC — All Students Take Calculus: which functions positive in each quadrant"],
-      },
-      {
-        title: "Inverse Trig & Solutions",
-        formulas: [
-          { label: "sin⁻¹ range", tex: "\\sin^{-1}: \\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]", jee: true, cet: true },
-          { label: "cos⁻¹ range", tex: "\\cos^{-1}: [0, \\pi]", jee: true, cet: true },
-          { label: "tan⁻¹ range", tex: "\\tan^{-1}: \\left(-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right)", jee: true, cet: true },
-          { label: "sin⁻¹ + cos⁻¹", tex: "\\sin^{-1}x + \\cos^{-1}x = \\frac{\\pi}{2}", jee: true, cet: true, important: true },
-          { label: "tan⁻¹ + cot⁻¹", tex: "\\tan^{-1}x + \\cot^{-1}x = \\frac{\\pi}{2}", jee: true, cet: true },
-          { label: "tan⁻¹x + tan⁻¹y", tex: "\\tan^{-1}x + \\tan^{-1}y = \\tan^{-1}\\frac{x+y}{1-xy} \\quad (xy<1)", jee: true, cet: true, important: true },
-          { label: "General solution: sinθ = sinα", tex: "\\theta = n\\pi + (-1)^n \\alpha", jee: true, cet: false },
-          { label: "General solution: cosθ = cosα", tex: "\\theta = 2n\\pi \\pm \\alpha", jee: true, cet: false },
-          { label: "General solution: tanθ = tanα", tex: "\\theta = n\\pi + \\alpha", jee: true, cet: false },
-          { label: "Sine rule", tex: "\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C} = 2R", jee: true, cet: true, important: true },
-          { label: "Cosine rule", tex: "\\cos A = \\frac{b^2 + c^2 - a^2}{2bc}", jee: true, cet: true, important: true },
-        ],
-        notes: [
-          "Principal value: unique value in restricted range",
-          "R = circumradius of triangle",
-          "For tan⁻¹x + tan⁻¹y: if xy > 1 and x, y > 0: add π",
-        ],
-        mistakes: ["Wrong range for inverse trig functions", "Forgetting adjustment for tan⁻¹ sum when xy > 1"],
-        tricks: ["sin⁻¹(sinx) = x only when x ∈ [−π/2, π/2]"],
-      },
-    ],
-  },
-  {
-    id: "pnc",
-    title: "Permutations & Combinations",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Core Formulas",
-        formulas: [
-          { label: "Factorial", tex: "n! = n \\times (n-1) \\times \\cdots \\times 1", jee: true, cet: true },
-          { label: "Permutation", tex: "^nP_r = \\frac{n!}{(n-r)!}", jee: true, cet: true, important: true },
-          { label: "Combination", tex: "^nC_r = \\frac{n!}{r!(n-r)!}", jee: true, cet: true, important: true },
-          { label: "Symmetry", tex: "^nC_r = {}^nC_{n-r}", jee: true, cet: true },
-          { label: "Pascal identity", tex: "^nC_r + {}^nC_{r-1} = {}^{n+1}C_r", jee: true, cet: true },
-          { label: "Sum of combinations", tex: "\\sum_{r=0}^{n} {}^nC_r = 2^n", jee: true, cet: true, important: true },
-          { label: "Circular permutation", tex: "(n-1)!", jee: true, cet: true },
-          { label: "Circular with identical orientation", tex: "\\frac{(n-1)!}{2}", jee: true, cet: false },
-          { label: "Arrangements with repetition", tex: "n^r", jee: true, cet: true },
-          { label: "Derangements", tex: "D_n = n!\\sum_{k=0}^{n}\\frac{(-1)^k}{k!}", jee: true, cet: false },
-        ],
-        notes: [
-          "0! = 1 by definition",
-          "nCr = 0 when r > n",
-          "Circular permutation: fix one person, arrange rest",
-          "Identical objects: n!/(p!q!r!) where p, q, r are counts of each identical type",
-        ],
-        mistakes: ["Circular arrangement: forgetting to divide by n", "Using permutation when order doesn't matter"],
-        tricks: ["Gap method: n objects, place r in n+1 gaps → ⁽ⁿ⁺¹⁾Cᵣ"],
-      },
-    ],
-  },
-  {
-    id: "probability",
-    title: "Probability",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Probability Fundamentals",
-        formulas: [
-          { label: "Classical probability", tex: "P(A) = \\frac{\\text{favorable outcomes}}{\\text{total outcomes}}", jee: true, cet: true, important: true },
-          { label: "Complementary", tex: "P(A') = 1 - P(A)", jee: true, cet: true },
-          { label: "Addition rule", tex: "P(A\\cup B) = P(A) + P(B) - P(A\\cap B)", jee: true, cet: true, important: true },
-          { label: "Mutually exclusive", tex: "P(A\\cup B) = P(A) + P(B)", jee: true, cet: true },
-          { label: "Conditional probability", tex: "P(A|B) = \\frac{P(A\\cap B)}{P(B)}", jee: true, cet: true, important: true },
-          { label: "Multiplication rule", tex: "P(A\\cap B) = P(A) \\cdot P(B|A)", jee: true, cet: true },
-          { label: "Independent events", tex: "P(A\\cap B) = P(A) \\cdot P(B)", jee: true, cet: true, important: true },
-          { label: "Bayes' theorem", tex: "P(A_i|B) = \\frac{P(A_i)P(B|A_i)}{\\sum_j P(A_j)P(B|A_j)}", jee: true, cet: false },
-          { label: "Total probability", tex: "P(B) = \\sum_i P(A_i)\\cdot P(B|A_i)", jee: true, cet: false },
-        ],
-        notes: [
-          "0 ≤ P(A) ≤ 1 always",
-          "P(S) = 1, P(∅) = 0",
-          "Mutually exclusive ≠ independent",
-          "Odds in favor: P(A)/P(A') = favorable:unfavorable",
-        ],
-        mistakes: ["Confusing mutually exclusive with independent", "Adding probabilities of non-mutually exclusive events"],
-        tricks: ["P(at least one) = 1 − P(none) — much easier"],
-      },
-    ],
-  },
-  {
-    id: "prob_dist",
-    title: "Probability Distribution & Binomial",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Discrete Distributions",
-        formulas: [
-          { label: "Expected value", tex: "E(X) = \\mu = \\sum x_i \\cdot P(x_i)", jee: true, cet: true, important: true },
-          { label: "Variance", tex: "\\text{Var}(X) = E(X^2) - [E(X)]^2", jee: true, cet: true, important: true },
-          { label: "Standard deviation", tex: "\\sigma = \\sqrt{\\text{Var}(X)}", jee: true, cet: true },
-          { label: "Binomial: P(X=r)", tex: "P(X=r) = {}^nC_r p^r q^{n-r}, \\quad q = 1-p", jee: true, cet: true, important: true },
-          { label: "Binomial mean", tex: "\\mu = np", jee: true, cet: true, important: true },
-          { label: "Binomial variance", tex: "\\sigma^2 = npq", jee: true, cet: true, important: true },
-          { label: "Binomial SD", tex: "\\sigma = \\sqrt{npq}", jee: true, cet: true },
-          { label: "Most probable value (binomial)", tex: "r = (n+1)p - 1 \\text{ to } (n+1)p", jee: true, cet: false },
-        ],
-        notes: [
-          "Binomial: fixed n trials, independent, constant p",
-          "n trials, p = success probability, q = 1−p = failure probability",
-          "Mean > Variance: not binomial",
-          "Poisson: λ = np (rare events, large n, small p)",
-        ],
-        mistakes: ["Using np as variance (it's npq)", "Forgetting q = 1−p"],
-        tricks: ["Mean = np, Variance = npq, SD = √(npq) — the three binomial constants"],
-      },
-    ],
-  },
-  {
-    id: "matrices",
-    title: "Matrices",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Matrix Algebra",
-        formulas: [
-          { label: "Matrix addition", tex: "(A+B)_{ij} = A_{ij} + B_{ij}", jee: true, cet: true },
-          { label: "Matrix multiplication", tex: "(AB)_{ij} = \\sum_k A_{ik}B_{kj}", jee: true, cet: true },
-          { label: "Transpose", tex: "(A^T)_{ij} = A_{ji}", jee: true, cet: true },
-          { label: "(AB)T", tex: "(AB)^T = B^T A^T", jee: true, cet: true, important: true },
-          { label: "Symmetric matrix", tex: "A^T = A", jee: true, cet: true },
-          { label: "Skew-symmetric", tex: "A^T = -A \\Rightarrow a_{ii} = 0", jee: true, cet: true },
-          { label: "Orthogonal matrix", tex: "A^T A = AA^T = I \\Rightarrow A^T = A^{-1}", jee: true, cet: false },
-          { label: "Inverse (2×2)", tex: "A^{-1} = \\frac{1}{|A|}\\begin{bmatrix}d & -b\\\\ -c & a\\end{bmatrix}", jee: true, cet: true, important: true },
-          { label: "A·A⁻¹", tex: "AA^{-1} = A^{-1}A = I", jee: true, cet: true },
-          { label: "Trace", tex: "\\text{tr}(A) = \\sum_i a_{ii}", jee: true, cet: false },
-        ],
-        notes: [
-          "m×n matrix: m rows, n columns; AB defined if inner dimensions match",
-          "AB ≠ BA in general (matrix multiplication non-commutative)",
-          "Null matrix: all entries 0; Identity: diagonal 1s, rest 0",
-          "A matrix is invertible iff |A| ≠ 0",
-          "Every square matrix = symmetric part + skew-symmetric part",
-        ],
-        mistakes: ["AB = BA assumption", "Wrong order in (AB)T = BT AT"],
-        tricks: ["(AB)T = BT AT — order reverses! Same as (AB)⁻¹ = B⁻¹A⁻¹"],
-      },
-    ],
-  },
-  {
-    id: "determinants",
-    title: "Determinants",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Determinant Properties & System of Equations",
-        formulas: [
-          { label: "2×2 determinant", tex: "\\begin{vmatrix}a & b\\\\ c & d\\end{vmatrix} = ad - bc", jee: true, cet: true, important: true },
-          { label: "3×3 expansion", tex: "|A| = a_{11}M_{11} - a_{12}M_{12} + a_{13}M_{13}", jee: true, cet: true },
-          { label: "|kA| for n×n", tex: "|kA| = k^n |A|", jee: true, cet: true, important: true },
-          { label: "Transpose property", tex: "|A^T| = |A|", jee: true, cet: true },
-          { label: "Product", tex: "|AB| = |A||B|", jee: true, cet: true, important: true },
-          { label: "Area of triangle", tex: "\\Delta = \\frac{1}{2}\\begin{vmatrix}x_1 & y_1 & 1\\\\ x_2 & y_2 & 1\\\\ x_3 & y_3 & 1\\end{vmatrix}", jee: true, cet: true, important: true },
-          { label: "Cramer's rule", tex: "x = \\frac{D_x}{D}, \\; y = \\frac{D_y}{D}, \\; z = \\frac{D_z}{D}", jee: true, cet: true, important: true },
-          { label: "Adjugate", tex: "A^{-1} = \\frac{1}{|A|}\\text{adj}(A)", jee: true, cet: true },
-        ],
-        notes: [
-          "If two rows/columns are identical: |A| = 0",
-          "Row/column swap: |A| changes sign",
-          "Row/column scalar multiplication: |A| multiplied by that scalar",
-          "D = 0, Dx = Dy = Dz = 0: infinite solutions",
-          "D = 0, any Di ≠ 0: no solution",
-          "D ≠ 0: unique solution",
-        ],
-        mistakes: ["Forgetting sign in cofactor expansion", "Multiplying entire determinant by k instead of just one row"],
-        tricks: ["Sarrus rule for 3×3: fast diagonal expansion"],
-      },
-    ],
-  },
-  {
-    id: "straight_lines",
-    title: "Straight Lines",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Equations & Properties",
-        formulas: [
-          { label: "Distance formula", tex: "d = \\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}", jee: true, cet: true },
-          { label: "Section formula (internal)", tex: "\\left(\\frac{m x_2 + n x_1}{m+n}, \\frac{m y_2 + n y_1}{m+n}\\right)", jee: true, cet: true },
-          { label: "Slope", tex: "m = \\tan\\theta = \\frac{y_2 - y_1}{x_2 - x_1}", jee: true, cet: true },
-          { label: "Slope-intercept form", tex: "y = mx + c", jee: true, cet: true, important: true },
-          { label: "Point-slope form", tex: "y - y_1 = m(x - x_1)", jee: true, cet: true },
-          { label: "Two-intercept form", tex: "\\frac{x}{a} + \\frac{y}{b} = 1", jee: true, cet: true },
-          { label: "General form", tex: "ax + by + c = 0", jee: true, cet: true },
-          { label: "Distance: point to line", tex: "d = \\frac{|ax_1 + by_1 + c|}{\\sqrt{a^2+b^2}}", jee: true, cet: true, important: true },
-          { label: "Angle between lines", tex: "\\tan\\theta = \\left|\\frac{m_1 - m_2}{1 + m_1 m_2}\\right|", jee: true, cet: true, important: true },
-          { label: "Parallel lines condition", tex: "m_1 = m_2", jee: true, cet: true },
-          { label: "Perpendicular lines condition", tex: "m_1 m_2 = -1", jee: true, cet: true, important: true },
-          { label: "Foot of perpendicular", tex: "\\frac{x-x_1}{a} = \\frac{y-y_1}{b} = -\\frac{ax_1+by_1+c}{a^2+b^2}", jee: true, cet: false },
-        ],
-        notes: [
-          "Concurrent lines: all pass through one point",
-          "Collinear points: area of triangle = 0",
-          "Family of lines: L₁ + λL₂ = 0",
-        ],
-        mistakes: ["Wrong sign in distance formula (must use absolute value)", "Confusing parallel (m₁=m₂) with coincident (ratio condition)"],
-        tricks: ["Three lines concurrent ⟺ determinant of coefficients = 0"],
-      },
-    ],
-  },
-  {
-    id: "pair_lines",
-    title: "Pair of Straight Lines",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Combined Equation",
-        formulas: [
-          { label: "General pair", tex: "ax^2 + 2hxy + by^2 = 0", jee: true, cet: true, important: true },
-          { label: "Sum of slopes", tex: "m_1 + m_2 = -\\frac{2h}{b}", jee: true, cet: true },
-          { label: "Product of slopes", tex: "m_1 m_2 = \\frac{a}{b}", jee: true, cet: true },
-          { label: "Angle between pair", tex: "\\tan\\theta = \\frac{2\\sqrt{h^2-ab}}{a+b}", jee: true, cet: true, important: true },
-          { label: "Condition for perpendicular", tex: "a + b = 0", jee: true, cet: true, important: true },
-          { label: "Condition for coincident", tex: "h^2 = ab", jee: true, cet: true },
-          { label: "General 2nd degree conic", tex: "ax^2 + 2hxy + by^2 + 2gx + 2fy + c = 0", jee: true, cet: true },
-          { label: "Condition: pair of lines (Δ=0)", tex: "\\Delta = abc + 2fgh - af^2 - bg^2 - ch^2 = 0", jee: true, cet: true, important: true },
-          { label: "Angle bisectors", tex: "\\frac{x^2 - y^2}{a - b} = \\frac{xy}{h}", jee: true, cet: true },
-        ],
-        notes: [
-          "ax² + 2hxy + by² = 0: homogeneous (passes through origin)",
-          "Pair of lines: one is y = m₁x, other y = m₂x",
-          "h² > ab: real and distinct lines; h² = ab: coincident; h² < ab: imaginary",
-        ],
-        mistakes: ["Confusing angle bisector formula", "Using wrong Δ formula for 2nd degree"],
-        tricks: ["θ = 90° iff a + b = 0 — perpendicular pair condition"],
-      },
-    ],
-  },
-  {
-    id: "circles",
-    title: "Circles",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Equations & Properties",
-        formulas: [
-          { label: "Standard form", tex: "(x-h)^2 + (y-k)^2 = r^2", jee: true, cet: true, important: true },
-          { label: "General form", tex: "x^2 + y^2 + 2gx + 2fy + c = 0", jee: true, cet: true, important: true },
-          { label: "Center & radius (general)", tex: "\\text{Center}=(-g,-f), \\; r=\\sqrt{g^2+f^2-c}", jee: true, cet: true, important: true },
-          { label: "Tangent at point (x₁,y₁)", tex: "xx_1 + yy_1 + g(x+x_1) + f(y+y_1) + c = 0", jee: true, cet: true, important: true },
-          { label: "Length of tangent", tex: "L = \\sqrt{x_1^2 + y_1^2 + 2gx_1 + 2fy_1 + c}", jee: true, cet: true },
-          { label: "Chord of contact", tex: "xx_1 + yy_1 = r^2 \\text{ (from external point)}", jee: true, cet: true },
-          { label: "Power of a point", tex: "= x_1^2 + y_1^2 + 2gx_1 + 2fy_1 + c", jee: true, cet: false },
-          { label: "Radical axis", tex: "S_1 - S_2 = 0", jee: true, cet: false },
-          { label: "Family of circles", tex: "S_1 + \\lambda S_2 = 0 \\text{ (through intersection)}", jee: true, cet: false },
-        ],
-        notes: [
-          "Circle passes through origin: c = 0",
-          "Circle touches x-axis: |f| = √(g²+f²−c) → f² = c",
-          "Circle touches y-axis: g² = c",
-          "Two circles intersect: |r₁−r₂| < d < r₁+r₂",
-          "External tangency: d = r₁+r₂; Internal: d = |r₁−r₂|",
-        ],
-        mistakes: ["Sign of center in general form: (−g, −f) not (g, f)", "Wrong radius formula"],
-        tricks: ["Tangent at origin on x² + y² = r²: tangent is x = 0 or y = 0 (axis)"],
-      },
-    ],
-  },
-  {
-    id: "conics",
-    title: "Conic Sections",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Parabola, Ellipse & Hyperbola",
-        formulas: [
-          { label: "Parabola: standard", tex: "y^2 = 4ax", jee: true, cet: true, important: true },
-          { label: "Focus & directrix (y²=4ax)", tex: "\\text{Focus}=(a,0), \\; x=-a", jee: true, cet: true },
-          { label: "Ellipse: standard", tex: "\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1, \\; a>b", jee: true, cet: true, important: true },
-          { label: "Ellipse: foci", tex: "c = \\sqrt{a^2 - b^2}, \\; e = \\frac{c}{a} < 1", jee: true, cet: true, important: true },
-          { label: "Ellipse: sum of focal distances", tex: "PF_1 + PF_2 = 2a", jee: true, cet: true, important: true },
-          { label: "Hyperbola: standard", tex: "\\frac{x^2}{a^2} - \\frac{y^2}{b^2} = 1", jee: true, cet: true, important: true },
-          { label: "Hyperbola: relation", tex: "b^2 = a^2(e^2-1), \\; e>1", jee: true, cet: true },
-          { label: "Rectangular hyperbola", tex: "xy = c^2", jee: true, cet: true },
-          { label: "Hyperbola: asymptotes", tex: "y = \\pm \\frac{b}{a}x", jee: true, cet: true },
-          { label: "Parabola tangent (y²=4ax)", tex: "y = mx + \\frac{a}{m}", jee: true, cet: true },
-          { label: "Ellipse tangent", tex: "\\frac{xx_1}{a^2} + \\frac{yy_1}{b^2} = 1", jee: true, cet: true },
-          { label: "Directrix of ellipse", tex: "x = \\pm \\frac{a}{e}", jee: true, cet: false },
-        ],
-        notes: [
-          "Eccentricity: e = 0 (circle), 0 < e < 1 (ellipse), e = 1 (parabola), e > 1 (hyperbola)",
-          "Latus rectum (y²=4ax): length = 4a",
-          "Latus rectum (ellipse): length = 2b²/a",
-          "Conjugate hyperbola: −x²/a² + y²/b² = 1",
-        ],
-        mistakes: ["Confusing a and b in ellipse (a > b for x²/a² + y²/b² = 1)", "Wrong eccentricity condition"],
-        tricks: ["y² = 4ax: vertex at origin, opens right; −4ax: opens left"],
-      },
-    ],
-  },
-  {
-    id: "vectors",
-    title: "Vectors",
-    tags: ["JEE", "CET"],
-    sections: [
-      {
-        title: "Vector Operations",
-        formulas: [
-          { label: "Magnitude", tex: "|\\vec{a}| = \\sqrt{a_x^2 + a_y^2 + a_z^2}", jee: true, cet: true },
-          { label: "Unit vector", tex: "\\hat{a} = \\frac{\\vec{a}}{|\\vec{a}|}", jee: true, cet: true },
-          { label: "Dot product", tex: "\\vec{a} \\cdot \\vec{b} = |a||b|\\cos\\theta = a_x b_x + a_y b_y + a_z b_z", jee: true, cet: true, important: true },
-          { label: "Cross product magnitude", tex: "|\\vec{a} \\times \\vec{b}| = |a||b|\\sin\\theta", jee: true, cet: true, important: true },
-          { label: "Cross product (determinant)", tex: "\\vec{a} \\times \\vec{b} = \\begin{vmatrix}\\hat{i} & \\hat{j} & \\hat{k}\\\\ a_1 & a_2 & a_3\\\\ b_1 & b_2 & b_3\\end{vmatrix}", jee: true, cet: true },
-          { label: "Scalar triple product", tex: "[\\vec{a}\\, \\vec{b}\\, \\vec{c}] = \\vec{a}\\cdot(\\vec{b}\\times\\vec{c})", jee: true, cet: false },
-          { label: "Volume of parallelepiped", tex: "V = |[\\vec{a}\\, \\vec{b}\\, \\vec{c}]|", jee: true, cet: false },
-          { label: "Projection of a on b", tex: "\\text{proj} = \\frac{\\vec{a}\\cdot\\vec{b}}{|\\vec{b}|}", jee: true, cet: true },
-          { label: "Area of triangle", tex: "= \\frac{1}{2}|\\vec{AB} \\times \\vec{AC}|", jee: true, cet: true, important: true },
-          { label: "Area of parallelogram", tex: "= |\\vec{a} \\times \\vec{b}|", jee: true, cet: true },
-          { label: "Angle between vectors", tex: "\\cos\\theta = \\frac{\\vec{a}\\cdot\\vec{b}}{|a||b|}", jee: true, cet: true, important: true },
-          { label: "Perpendicular condition", tex: "\\vec{a}\\cdot\\vec{b} = 0", jee: true, cet: true, important: true },
-          { label: "Parallel condition", tex: "\\vec{a}\\times\\vec{b} = \\vec{0}", jee: true, cet: true },
-          { label: "Position vector division", tex: "\\vec{r} = \\frac{m\\vec{b}+n\\vec{a}}{m+n}", jee: true, cet: true },
-        ],
-        notes: [
-          "î·î = ĵ·ĵ = k̂·k̂ = 1; î·ĵ = 0",
-          "î×ĵ = k̂; ĵ×k̂ = î; k̂×î = ĵ",
-          "Dot product is commutative; cross product is anti-commutative",
-          "a×b = −b×a",
-          "Coplanar vectors: [a b c] = 0",
-        ],
-        mistakes: ["Dot product gives scalar; cross product gives vector", "Wrong sign: a×b = −(b×a)"],
-        tricks: ["î×ĵ=k̂: cyclic right-hand rule; reversing order negates"],
-      },
-    ],
-  },
+  { id: "trigonometry", title: "Trigonometry", tags: ["JEE","CET"], sections: [
+    { title: "Fundamental Identities", formulas: [
+      { label: "Pythagorean", tex: "\\sin^2\\theta+\\cos^2\\theta=1", jee:true, cet:true, important:true },
+      { label: "tan identity", tex: "1+\\tan^2\\theta=\\sec^2\\theta", jee:true, cet:true },
+      { label: "cot identity", tex: "1+\\cot^2\\theta=\\csc^2\\theta", jee:true, cet:true },
+      { label: "sin(A±B)", tex: "\\sin(A\\pm B)=\\sin A\\cos B\\pm\\cos A\\sin B", jee:true, cet:true, important:true },
+      { label: "cos(A±B)", tex: "\\cos(A\\pm B)=\\cos A\\cos B\\mp\\sin A\\sin B", jee:true, cet:true, important:true },
+      { label: "tan(A+B)", tex: "\\tan(A+B)=\\frac{\\tan A+\\tan B}{1-\\tan A\\tan B}", jee:true, cet:true },
+      { label: "sin 2A", tex: "\\sin 2A=2\\sin A\\cos A", jee:true, cet:true, important:true },
+      { label: "cos 2A", tex: "\\cos 2A=\\cos^2A-\\sin^2A=2\\cos^2A-1", jee:true, cet:true, important:true },
+      { label: "tan 2A", tex: "\\tan 2A=\\frac{2\\tan A}{1-\\tan^2 A}", jee:true, cet:true },
+      { label: "sin²A (half angle)", tex: "\\sin^2A=\\frac{1-\\cos 2A}{2}", jee:true, cet:true, important:true },
+      { label: "cos²A (half angle)", tex: "\\cos^2A=\\frac{1+\\cos 2A}{2}", jee:true, cet:true, important:true },
+      { label: "sinC+sinD", tex: "\\sin C+\\sin D=2\\sin\\frac{C+D}{2}\\cos\\frac{C-D}{2}", jee:true, cet:true, important:true },
+      { label: "sin 3A", tex: "\\sin 3A=3\\sin A-4\\sin^3A", jee:true, cet:true },
+      { label: "cos 3A", tex: "\\cos 3A=4\\cos^3A-3\\cos A", jee:true, cet:true },
+    ], notes:["ASTC: All(Q1), Sin(Q2), Tan(Q3), Cos(Q4)","sin(−θ)=−sinθ (odd); cos(−θ)=cosθ (even)","sin30°=½, sin45°=1/√2, sin60°=√3/2"], mistakes:["Wrong sign in cos(A−B) vs cos(A+B)"], tricks:["ASTC — All Students Take Calculus"] },
+    { title: "Inverse Trig & Triangle", formulas: [
+      { label: "sin⁻¹ range", tex: "\\sin^{-1}:\\left[-\\frac{\\pi}{2},\\frac{\\pi}{2}\\right]", jee:true, cet:true },
+      { label: "cos⁻¹ range", tex: "\\cos^{-1}:[0,\\pi]", jee:true, cet:true },
+      { label: "sin⁻¹+cos⁻¹", tex: "\\sin^{-1}x+\\cos^{-1}x=\\frac{\\pi}{2}", jee:true, cet:true, important:true },
+      { label: "tan⁻¹+tan⁻¹", tex: "\\tan^{-1}x+\\tan^{-1}y=\\tan^{-1}\\frac{x+y}{1-xy}\\;(xy<1)", jee:true, cet:true, important:true },
+      { label: "Sine rule", tex: "\\frac{a}{\\sin A}=\\frac{b}{\\sin B}=\\frac{c}{\\sin C}=2R", jee:true, cet:true, important:true },
+      { label: "Cosine rule", tex: "\\cos A=\\frac{b^2+c^2-a^2}{2bc}", jee:true, cet:true, important:true },
+    ], notes:["Principal value: unique value in restricted range","For tan⁻¹ sum: if xy>1, x,y>0 → add π"], mistakes:["sin⁻¹(sinx)=x only when x∈[−π/2,π/2]"], tricks:["tan⁻¹+tan⁻¹ needs xy<1 check!"] },
+  ]},
+  { id: "pnc_prob", title: "P&C + Probability", tags: ["JEE","CET"], sections: [
+    { title: "Permutations & Combinations", formulas: [
+      { label: "Permutation", tex: "^nP_r=\\frac{n!}{(n-r)!}", jee:true, cet:true, important:true },
+      { label: "Combination", tex: "^nC_r=\\frac{n!}{r!(n-r)!}", jee:true, cet:true, important:true },
+      { label: "Symmetry", tex: "^nC_r={}^nC_{n-r}", jee:true, cet:true },
+      { label: "Pascal identity", tex: "^nC_r+{}^nC_{r-1}={}^{n+1}C_r", jee:true, cet:true },
+      { label: "Sum of combinations", tex: "\\sum_{r=0}^n {}^nC_r = 2^n", jee:true, cet:true, important:true },
+      { label: "Circular permutation", tex: "(n-1)!", jee:true, cet:true },
+    ], notes:["0!=1","Circular: fix one, arrange rest","Identical objects: n!/(p!q!r!)"], mistakes:["Circular: forgetting to divide by n","Permutation when order doesn't matter"], tricks:["Gap method: n objects, place r in n+1 gaps → ⁽ⁿ⁺¹⁾Cᵣ"] },
+    { title: "Probability", formulas: [
+      { label: "Classical probability", tex: "P(A)=\\frac{\\text{favorable}}{\\text{total}}", jee:true, cet:true, important:true },
+      { label: "Complement", tex: "P(A')=1-P(A)", jee:true, cet:true },
+      { label: "Addition rule", tex: "P(A\\cup B)=P(A)+P(B)-P(A\\cap B)", jee:true, cet:true, important:true },
+      { label: "Conditional", tex: "P(A|B)=\\frac{P(A\\cap B)}{P(B)}", jee:true, cet:true, important:true },
+      { label: "Independent events", tex: "P(A\\cap B)=P(A)\\cdot P(B)", jee:true, cet:true, important:true },
+      { label: "Bayes' theorem", tex: "P(A_i|B)=\\frac{P(A_i)P(B|A_i)}{\\sum_j P(A_j)P(B|A_j)}", jee:true, cet:false },
+      { label: "Binomial P(X=r)", tex: "^nC_r p^r q^{n-r}", jee:true, cet:true, important:true },
+      { label: "Binomial mean", tex: "\\mu=np", jee:true, cet:true, important:true },
+      { label: "Binomial variance", tex: "\\sigma^2=npq", jee:true, cet:true, important:true },
+    ], notes:["Mutually exclusive ≠ independent","0≤P(A)≤1 always","Binomial: fixed n, independent, constant p"], mistakes:["Adding probabilities of non-mutually exclusive events","np is mean, npq is variance"], tricks:["P(at least one) = 1 − P(none)"] },
+  ]},
+  { id: "algebra", title: "Matrices & Determinants", tags: ["JEE","CET"], sections: [
+    { title: "Matrix Algebra", formulas: [
+      { label: "(AB)ᵀ", tex: "(AB)^T=B^TA^T", jee:true, cet:true, important:true },
+      { label: "Symmetric", tex: "A^T=A", jee:true, cet:true },
+      { label: "Skew-symmetric", tex: "A^T=-A,\\;a_{ii}=0", jee:true, cet:true },
+      { label: "Inverse (2×2)", tex: "A^{-1}=\\frac{1}{|A|}\\begin{bmatrix}d&-b\\\\-c&a\\end{bmatrix}", jee:true, cet:true, important:true },
+    ], notes:["AB≠BA (non-commutative)","Invertible iff |A|≠0"], mistakes:["Assuming AB=BA","Wrong order in (AB)ᵀ"], tricks:["(AB)ᵀ=BᵀAᵀ — order reverses! Same as (AB)⁻¹=B⁻¹A⁻¹"] },
+    { title: "Determinants", formulas: [
+      { label: "2×2 det", tex: "\\begin{vmatrix}a&b\\\\c&d\\end{vmatrix}=ad-bc", jee:true, cet:true, important:true },
+      { label: "|kA| for n×n", tex: "|kA|=k^n|A|", jee:true, cet:true, important:true },
+      { label: "|AB|", tex: "|AB|=|A||B|", jee:true, cet:true, important:true },
+      { label: "Area of triangle", tex: "\\Delta=\\frac{1}{2}\\begin{vmatrix}x_1&y_1&1\\\\x_2&y_2&1\\\\x_3&y_3&1\\end{vmatrix}", jee:true, cet:true, important:true },
+      { label: "Cramer's rule", tex: "x=\\frac{D_x}{D},\\;y=\\frac{D_y}{D}", jee:true, cet:true },
+    ], notes:["Identical rows/cols: |A|=0","D=0, all Di=0: infinite solutions","D=0, any Di≠0: no solution"], mistakes:["Forgetting sign in cofactor expansion"], tricks:["Sarrus rule for 3×3 expansion"] },
+  ]},
+  { id: "coordinate", title: "Coordinate Geometry", tags: ["JEE","CET"], sections: [
+    { title: "Straight Lines", formulas: [
+      { label: "Slope", tex: "m=\\tan\\theta=\\frac{y_2-y_1}{x_2-x_1}", jee:true, cet:true },
+      { label: "Slope-intercept", tex: "y=mx+c", jee:true, cet:true, important:true },
+      { label: "Point-slope", tex: "y-y_1=m(x-x_1)", jee:true, cet:true },
+      { label: "Intercept form", tex: "\\frac{x}{a}+\\frac{y}{b}=1", jee:true, cet:true },
+      { label: "Dist: point to line", tex: "d=\\frac{|ax_1+by_1+c|}{\\sqrt{a^2+b^2}}", jee:true, cet:true, important:true },
+      { label: "Angle between lines", tex: "\\tan\\theta=\\left|\\frac{m_1-m_2}{1+m_1m_2}\\right|", jee:true, cet:true, important:true },
+      { label: "Perpendicular condition", tex: "m_1m_2=-1", jee:true, cet:true, important:true },
+    ], notes:["Parallel: m₁=m₂","Concurrent lines: all pass through one point"], mistakes:["Distance formula needs |absolute value|"], tricks:["Three lines concurrent ⟺ determinant of coefficients = 0"] },
+    { title: "Circles", formulas: [
+      { label: "Standard form", tex: "(x-h)^2+(y-k)^2=r^2", jee:true, cet:true, important:true },
+      { label: "General form", tex: "x^2+y^2+2gx+2fy+c=0", jee:true, cet:true, important:true },
+      { label: "Centre & radius", tex: "(-g,-f),\\;r=\\sqrt{g^2+f^2-c}", jee:true, cet:true, important:true },
+      { label: "Tangent at (x₁,y₁)", tex: "xx_1+yy_1+g(x+x_1)+f(y+y_1)+c=0", jee:true, cet:true },
+      { label: "Length of tangent", tex: "L=\\sqrt{x_1^2+y_1^2+2gx_1+2fy_1+c}", jee:true, cet:true },
+    ], notes:["Centre is (−g, −f) not (g, f)","Two circles: |r₁−r₂|<d<r₁+r₂ to intersect"], mistakes:["Sign error in centre coordinates"], tricks:["Tangent from external point: L²=S₁"] },
+    { title: "Conics", formulas: [
+      { label: "Parabola", tex: "y^2=4ax", jee:true, cet:true, important:true },
+      { label: "Parabola focus", tex: "\\text{Focus}=(a,0),\\;\\text{directrix}:x=-a", jee:true, cet:true },
+      { label: "Ellipse", tex: "\\frac{x^2}{a^2}+\\frac{y^2}{b^2}=1,\\;a>b", jee:true, cet:true, important:true },
+      { label: "Ellipse eccentricity", tex: "e=\\frac{c}{a}<1,\\;c=\\sqrt{a^2-b^2}", jee:true, cet:true, important:true },
+      { label: "Ellipse focal sum", tex: "PF_1+PF_2=2a", jee:true, cet:true, important:true },
+      { label: "Hyperbola", tex: "\\frac{x^2}{a^2}-\\frac{y^2}{b^2}=1,\\;e>1", jee:true, cet:true, important:true },
+      { label: "Rectangular hyperbola", tex: "xy=c^2", jee:true, cet:true },
+    ], notes:["e=0:circle, 0<e<1:ellipse, e=1:parabola, e>1:hyperbola","Latus rectum (y²=4ax)=4a"], mistakes:["Confusing a and b in ellipse"], tricks:["y²=4ax: opens right; y²=−4ax: opens left"] },
+  ]},
+  { id: "vectors", title: "Vectors & 3D", tags: ["JEE","CET"], sections: [
+    { title: "Vector Operations", formulas: [
+      { label: "Dot product", tex: "\\vec{a}\\cdot\\vec{b}=|a||b|\\cos\\theta", jee:true, cet:true, important:true },
+      { label: "Cross product mag", tex: "|\\vec{a}\\times\\vec{b}|=|a||b|\\sin\\theta", jee:true, cet:true, important:true },
+      { label: "Scalar triple product", tex: "[\\vec{a}\\,\\vec{b}\\,\\vec{c}]=\\vec{a}\\cdot(\\vec{b}\\times\\vec{c})", jee:true, cet:false },
+      { label: "Area of triangle", tex: "=\\frac{1}{2}|\\vec{AB}\\times\\vec{AC}|", jee:true, cet:true, important:true },
+      { label: "Area of parallelogram", tex: "=|\\vec{a}\\times\\vec{b}|", jee:true, cet:true },
+      { label: "Projection of a on b", tex: "=\\frac{\\vec{a}\\cdot\\vec{b}}{|\\vec{b}|}", jee:true, cet:true },
+      { label: "Perpendicular condition", tex: "\\vec{a}\\cdot\\vec{b}=0", jee:true, cet:true, important:true },
+      { label: "Parallel condition", tex: "\\vec{a}\\times\\vec{b}=\\vec{0}", jee:true, cet:true },
+    ], notes:["î×ĵ=k̂; ĵ×k̂=î; k̂×î=ĵ (cyclic)","a×b=−(b×a) (anti-commutative)","Coplanar: [a b c]=0"], mistakes:["Dot product=scalar; cross product=vector"], tricks:["î×ĵ=k̂: right-hand cyclic rule"] },
+  ]},
+  { id: "calculus", title: "Calculus", tags: ["JEE","CET"], sections: [
+    { title: "Differentiation", formulas: [
+      { label: "d/dx(xⁿ)", tex: "\\frac{d}{dx}(x^n)=nx^{n-1}", jee:true, cet:true, important:true },
+      { label: "d/dx(sin x)", tex: "\\frac{d}{dx}(\\sin x)=\\cos x", jee:true, cet:true },
+      { label: "d/dx(cos x)", tex: "\\frac{d}{dx}(\\cos x)=-\\sin x", jee:true, cet:true },
+      { label: "d/dx(tan x)", tex: "\\frac{d}{dx}(\\tan x)=\\sec^2 x", jee:true, cet:true },
+      { label: "d/dx(ln x)", tex: "\\frac{d}{dx}(\\ln x)=\\frac{1}{x}", jee:true, cet:true },
+      { label: "d/dx(eˣ)", tex: "\\frac{d}{dx}(e^x)=e^x", jee:true, cet:true },
+      { label: "Chain rule", tex: "\\frac{d}{dx}f(g(x))=f'(g(x))\\cdot g'(x)", jee:true, cet:true, important:true },
+      { label: "Product rule", tex: "(uv)'=u'v+uv'", jee:true, cet:true, important:true },
+      { label: "Quotient rule", tex: "\\left(\\frac{u}{v}\\right)'=\\frac{u'v-uv'}{v^2}", jee:true, cet:true },
+    ], notes:["Critical points: f'(x)=0","Maxima: f''(x)<0; Minima: f''(x)>0"], mistakes:["Chain rule missing"], tricks:["d/dx(xⁿ)=nxⁿ⁻¹: power rule always"] },
+    { title: "Integration", formulas: [
+      { label: "∫xⁿ dx", tex: "\\int x^n\\,dx=\\frac{x^{n+1}}{n+1}+C", jee:true, cet:true, important:true },
+      { label: "∫sin x dx", tex: "\\int\\sin x\\,dx=-\\cos x+C", jee:true, cet:true },
+      { label: "∫cos x dx", tex: "\\int\\cos x\\,dx=\\sin x+C", jee:true, cet:true },
+      { label: "∫eˣ dx", tex: "\\int e^x\\,dx=e^x+C", jee:true, cet:true },
+      { label: "∫1/x dx", tex: "\\int\\frac{1}{x}\\,dx=\\ln|x|+C", jee:true, cet:true },
+      { label: "Definite integral", tex: "\\int_a^b f(x)\\,dx = F(b)-F(a)", jee:true, cet:true, important:true },
+      { label: "By parts", tex: "\\int u\\,dv = uv - \\int v\\,du", jee:true, cet:true, important:true },
+    ], notes:["Always add +C for indefinite","Area between curves: ∫|f(x)−g(x)|dx"], mistakes:["Forgetting +C","Sign in ∫sin x dx = −cos x"], tricks:["ILATE for by parts: Inverse, Log, Algebraic, Trig, Exponential"] },
+  ]},
 ];
 
-// ─── TAG BADGE ─────────────────────────────────────────────────────────────
 function TagBadge({ tag }) {
   const styles = {
-    JEE: { bg: "rgba(251,191,36,0.15)", border: "rgba(251,191,36,0.4)", color: "#FBBF24" },
-    CET: { bg: "rgba(52,211,153,0.15)", border: "rgba(52,211,153,0.4)", color: "#34D399" },
-    NCERT: { bg: "rgba(167,139,250,0.15)", border: "rgba(167,139,250,0.4)", color: "#A78BFA" },
+    JEE: { bg:"rgba(251,191,36,0.15)", border:"rgba(251,191,36,0.4)", color:"#FBBF24" },
+    CET: { bg:"rgba(52,211,153,0.15)", border:"rgba(52,211,153,0.4)", color:"#34D399" },
+    NCERT: { bg:"rgba(167,139,250,0.15)", border:"rgba(167,139,250,0.4)", color:"#A78BFA" },
   };
   const s = styles[tag] || styles.JEE;
   return (
-    <span style={{
-      background: s.bg,
-      border: `1px solid ${s.border}`,
-      color: s.color,
-      fontSize: "9px",
-      fontWeight: 700,
-      padding: "2px 7px",
-      borderRadius: 99,
-      letterSpacing: "0.08em",
-      textTransform: "uppercase",
-    }}>{tag}</span>
+    <span style={{ background:s.bg, border:`1px solid ${s.border}`, color:s.color, fontSize:"9px", fontWeight:700, padding:"2px 6px", borderRadius:99, letterSpacing:"0.08em", textTransform:"uppercase", whiteSpace:"nowrap" }}>{tag}</span>
   );
 }
 
-// ─── FORMULA CARD ──────────────────────────────────────────────────────────
 function FormulaCard({ f, subjectColor, bookmarks, toggleBookmark }) {
   const id = f.label;
   const isBookmarked = bookmarks.has(id);
   return (
-    <div style={{
-      background: "rgba(255,255,255,0.04)",
-      border: `1px solid ${f.important ? subjectColor + "50" : "rgba(255,255,255,0.07)"}`,
-      borderRadius: 14,
-      padding: "13px 16px",
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      transition: "all 0.2s",
-      boxShadow: f.important ? `0 0 18px ${subjectColor}20` : "none",
-      position: "relative",
-    }}
-      className="formula-card"
-    >
+    <div style={{ background:"rgba(255,255,255,0.04)", border:`1px solid ${f.important ? subjectColor+"50" : "rgba(255,255,255,0.07)"}`, borderRadius:12, padding:"12px 14px", display:"flex", alignItems:"flex-start", gap:10, boxShadow:f.important?`0 0 16px ${subjectColor}18`:"none", position:"relative" }}>
       {f.important && (
-        <div style={{
-          position: "absolute",
-          top: 8, right: 8,
-          background: "rgba(251,191,36,0.2)",
-          border: "1px solid rgba(251,191,36,0.4)",
-          color: "#FBBF24",
-          fontSize: 8,
-          padding: "1px 5px",
-          borderRadius: 99,
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-        }}>★ KEY</div>
+        <div style={{ position:"absolute", top:7, right:38, background:"rgba(251,191,36,0.2)", border:"1px solid rgba(251,191,36,0.4)", color:"#FBBF24", fontSize:8, padding:"1px 5px", borderRadius:99, fontWeight:700, letterSpacing:"0.08em" }}>★ KEY</div>
       )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 10, marginBottom: 6, letterSpacing: "0.05em" }}>{f.label}</div>
-        <div style={{ overflowX: "auto", color: "#fff" }}>
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ color:"rgba(255,255,255,0.4)", fontSize:10, marginBottom:5 }}>{f.label}</div>
+        <div style={{ overflowX:"auto", color:"#fff", WebkitOverflowScrolling:"touch" }}>
           <Math tex={f.tex} display={true} />
         </div>
-        <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
+        <div style={{ display:"flex", gap:4, marginTop:6, flexWrap:"wrap" }}>
           {f.jee && <TagBadge tag="JEE" />}
           {f.cet && <TagBadge tag="CET" />}
         </div>
       </div>
       <button
         onClick={() => toggleBookmark(id)}
-        style={{
-          background: isBookmarked ? "rgba(251,191,36,0.15)" : "rgba(255,255,255,0.05)",
-          border: `1px solid ${isBookmarked ? "rgba(251,191,36,0.4)" : "rgba(255,255,255,0.1)"}`,
-          color: isBookmarked ? "#FBBF24" : "rgba(255,255,255,0.3)",
-          borderRadius: 8,
-          width: 30,
-          height: 30,
-          cursor: "pointer",
-          fontSize: 14,
-          flexShrink: 0,
-          transition: "all 0.2s",
-        }}
-      >{isBookmarked ? "★" : "☆"}</button>
+        style={{ background:isBookmarked?"rgba(251,191,36,0.15)":"rgba(255,255,255,0.05)", border:`1px solid ${isBookmarked?"rgba(251,191,36,0.4)":"rgba(255,255,255,0.1)"}`, color:isBookmarked?"#FBBF24":"rgba(255,255,255,0.3)", borderRadius:8, width:32, height:32, cursor:"pointer", fontSize:15, flexShrink:0, marginTop:2 }}
+      >{isBookmarked?"★":"☆"}</button>
     </div>
   );
 }
 
-// ─── SECTION BLOCK ─────────────────────────────────────────────────────────
 function SectionBlock({ section, subjectColor, bookmarks, toggleBookmark }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom:8 }}>
       <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          width: "100%",
-          background: "rgba(255,255,255,0.05)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 12,
-          padding: "12px 16px",
-          color: "#fff",
-          fontSize: 14,
-          fontWeight: 600,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          cursor: "pointer",
-          textAlign: "left",
-          transition: "all 0.2s",
-        }}
-        className="section-btn"
+        onClick={() => setOpen(o=>!o)}
+        style={{ width:"100%", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"11px 14px", color:"#fff", fontSize:13, fontWeight:600, display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer", textAlign:"left" }}
       >
-        <span>{section.title}</span>
-        <span style={{ color: subjectColor, transition: "transform 0.25s", display: "inline-block", transform: open ? "rotate(0)" : "rotate(-90deg)" }}>▾</span>
+        <span style={{ flex:1, marginRight:8 }}>{section.title}</span>
+        <span style={{ color:subjectColor, fontSize:12, transform:open?"rotate(0)":"rotate(-90deg)", display:"inline-block", transition:"transform 0.2s", flexShrink:0 }}>▾</span>
       </button>
       {open && (
-        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-          {section.formulas && section.formulas.map((f, i) => (
+        <div style={{ marginTop:6, display:"flex", flexDirection:"column", gap:6 }}>
+          {section.formulas && section.formulas.map((f,i) => (
             <FormulaCard key={i} f={f} subjectColor={subjectColor} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
           ))}
           {section.notes && section.notes.length > 0 && (
-            <div style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: 12,
-              padding: "13px 16px",
-              marginTop: 4,
-            }}>
-              <div style={{ color: subjectColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>📝 NOTES</div>
-              {section.notes.map((n, i) => (
-                <div key={i} style={{ color: "rgba(255,255,255,0.65)", fontSize: 12.5, marginBottom: 4, lineHeight: 1.6, paddingLeft: 12, borderLeft: `2px solid ${subjectColor}50` }}>
-                  {n}
-                </div>
+            <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:10, padding:"11px 14px" }}>
+              <div style={{ color:subjectColor, fontSize:10, fontWeight:700, letterSpacing:"0.08em", marginBottom:8 }}>📝 NOTES</div>
+              {section.notes.map((n,i) => (
+                <div key={i} style={{ color:"rgba(255,255,255,0.65)", fontSize:12, marginBottom:5, lineHeight:1.6, paddingLeft:10, borderLeft:`2px solid ${subjectColor}50` }}>{n}</div>
               ))}
             </div>
           )}
           {section.mistakes && section.mistakes.length > 0 && (
-            <div style={{
-              background: "rgba(239,68,68,0.05)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              borderRadius: 12,
-              padding: "13px 16px",
-            }}>
-              <div style={{ color: "#F87171", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>⚠️ COMMON MISTAKES</div>
-              {section.mistakes.map((m, i) => (
-                <div key={i} style={{ color: "rgba(255,255,255,0.6)", fontSize: 12.5, marginBottom: 4, lineHeight: 1.6, paddingLeft: 12, borderLeft: "2px solid rgba(239,68,68,0.4)" }}>
-                  {m}
-                </div>
+            <div style={{ background:"rgba(239,68,68,0.05)", border:"1px solid rgba(239,68,68,0.2)", borderRadius:10, padding:"11px 14px" }}>
+              <div style={{ color:"#F87171", fontSize:10, fontWeight:700, letterSpacing:"0.08em", marginBottom:8 }}>⚠️ COMMON MISTAKES</div>
+              {section.mistakes.map((m,i) => (
+                <div key={i} style={{ color:"rgba(255,255,255,0.6)", fontSize:12, marginBottom:4, lineHeight:1.6, paddingLeft:10, borderLeft:"2px solid rgba(239,68,68,0.4)" }}>{m}</div>
               ))}
             </div>
           )}
           {section.tricks && section.tricks.length > 0 && (
-            <div style={{
-              background: "rgba(251,146,60,0.05)",
-              border: "1px solid rgba(251,146,60,0.2)",
-              borderRadius: 12,
-              padding: "13px 16px",
-            }}>
-              <div style={{ color: "#FB923C", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>⚡ TRICKS & SHORTCUTS</div>
-              {section.tricks.map((t, i) => (
-                <div key={i} style={{ color: "rgba(255,255,255,0.6)", fontSize: 12.5, marginBottom: 4, lineHeight: 1.6, paddingLeft: 12, borderLeft: "2px solid rgba(251,146,60,0.4)" }}>
-                  {t}
-                </div>
+            <div style={{ background:"rgba(251,146,60,0.05)", border:"1px solid rgba(251,146,60,0.2)", borderRadius:10, padding:"11px 14px" }}>
+              <div style={{ color:"#FB923C", fontSize:10, fontWeight:700, letterSpacing:"0.08em", marginBottom:8 }}>⚡ TRICKS</div>
+              {section.tricks.map((t,i) => (
+                <div key={i} style={{ color:"rgba(255,255,255,0.6)", fontSize:12, marginBottom:4, lineHeight:1.6, paddingLeft:10, borderLeft:"2px solid rgba(251,146,60,0.4)" }}>{t}</div>
               ))}
             </div>
           )}
@@ -1344,301 +471,91 @@ function SectionBlock({ section, subjectColor, bookmarks, toggleBookmark }) {
   );
 }
 
-// ─── TOPIC VIEW ────────────────────────────────────────────────────────────
-function TopicView({ topic, subject, bookmarks, toggleBookmark }) {
+function TopicView({ topic, subject, bookmarks, toggleBookmark, onBack }) {
   const s = SUBJECTS[subject];
   return (
-    <div style={{ padding: "0 0 40px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-        <div style={{
-          width: 42, height: 42, borderRadius: 12,
-          background: s.bg,
-          border: `1px solid ${s.border}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20,
-        }}>{s.icon}</div>
-        <div>
-          <h2 style={{ color: "#fff", margin: 0, fontSize: 22, fontWeight: 700, fontFamily: "'Playfair Display', serif" }}>{topic.title}</h2>
-          <div style={{ display: "flex", gap: 5, marginTop: 4 }}>
-            {topic.tags.map(t => <TagBadge key={t} tag={t} />)}
+    <div>
+      {/* Back header */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16, paddingBottom:14, borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
+        <button onClick={onBack} style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", color:"#fff", borderRadius:8, width:34, height:34, cursor:"pointer", fontSize:16, flexShrink:0 }}>←</button>
+        <div style={{ flex:1, minWidth:0 }}>
+          <h2 style={{ color:"#fff", margin:0, fontSize:17, fontWeight:700 }}>{topic.title}</h2>
+          <div style={{ display:"flex", gap:4, marginTop:3, flexWrap:"wrap" }}>
+            {topic.tags.map(t=><TagBadge key={t} tag={t}/>)}
           </div>
         </div>
       </div>
-      {topic.sections.map((sec, i) => (
+      {topic.sections.map((sec,i) => (
         <SectionBlock key={i} section={sec} subjectColor={s.color} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
       ))}
     </div>
   );
 }
 
-// ─── SIDEBAR ───────────────────────────────────────────────────────────────
-function Sidebar({ subject, setSubject, activeTopic, setActiveTopic, searchQuery, setSearchQuery }) {
-  const dataMap = { physics: PHYSICS_DATA, chemistry: CHEMISTRY_DATA, mathematics: MATHEMATICS_DATA };
-  const topics = dataMap[subject] || [];
-
-  return (
-    <div style={{
-      width: 260,
-      flexShrink: 0,
-      background: "rgba(10,10,20,0.85)",
-      backdropFilter: "blur(30px)",
-      borderRight: "1px solid rgba(255,255,255,0.07)",
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      position: "sticky",
-      top: 0,
-      overflow: "hidden",
-    }}>
-      {/* Logo */}
-      <div style={{ padding: "22px 18px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ fontSize: 18, fontWeight: 800, fontFamily: "'Playfair Display', serif", color: "#fff", letterSpacing: "-0.02em" }}>
-          JEE<span style={{ color: "#818CF8" }}>×</span>CET
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, letterSpacing: "0.12em", marginTop: 2 }}>FORMULA HANDBOOK</div>
-      </div>
-
-      {/* Search */}
-      <div style={{ padding: "12px 14px" }}>
-        <div style={{
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 10,
-          display: "flex",
-          alignItems: "center",
-          padding: "8px 12px",
-          gap: 8,
-        }}>
-          <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>⌕</span>
-          <input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search formulas..."
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "#fff",
-              fontSize: 12.5,
-              outline: "none",
-              width: "100%",
-              fontFamily: "inherit",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Subject Tabs */}
-      <div style={{ padding: "0 14px 12px", display: "flex", gap: 6 }}>
-        {Object.entries(SUBJECTS).map(([key, s]) => (
-          <button
-            key={key}
-            onClick={() => { setSubject(key); setActiveTopic(null); }}
-            style={{
-              flex: 1,
-              padding: "7px 4px",
-              borderRadius: 9,
-              border: `1px solid ${subject === key ? s.color + "60" : "rgba(255,255,255,0.07)"}`,
-              background: subject === key ? s.bg : "transparent",
-              color: subject === key ? s.color : "rgba(255,255,255,0.3)",
-              fontSize: 16,
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            title={s.label}
-          >{s.icon}</button>
-        ))}
-      </div>
-
-      {/* Topic List */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "0 10px 20px" }}>
-        {topics.map(topic => (
-          <button
-            key={topic.id}
-            onClick={() => setActiveTopic(topic.id)}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              padding: "9px 12px",
-              borderRadius: 9,
-              border: "1px solid transparent",
-              background: activeTopic === topic.id ? SUBJECTS[subject].bg : "transparent",
-              borderColor: activeTopic === topic.id ? SUBJECTS[subject].border : "transparent",
-              color: activeTopic === topic.id ? SUBJECTS[subject].color : "rgba(255,255,255,0.55)",
-              fontSize: 12.5,
-              fontWeight: activeTopic === topic.id ? 600 : 400,
-              cursor: "pointer",
-              marginBottom: 2,
-              transition: "all 0.18s",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-            className="topic-btn"
-          >
-            <span style={{ opacity: 0.5, fontSize: 10 }}>◆</span>
-            {topic.title}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── HOME PAGE ─────────────────────────────────────────────────────────────
-function HomePage({ setSubject, setActiveTopic }) {
-  const stats = [
-    { label: "Formulas", value: "500+", icon: "∑" },
-    { label: "Topics", value: "34", icon: "📚" },
-    { label: "Subjects", value: "3", icon: "⚗" },
-    { label: "Tricks", value: "100+", icon: "⚡" },
-  ];
-
-  return (
-    <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px" }}>
-      {/* Hero */}
-      <div style={{
-        textAlign: "center",
-        marginBottom: 48,
-        padding: "60px 40px",
-        background: "radial-gradient(ellipse at 50% 0%, rgba(129,140,248,0.12), transparent 70%), rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 28,
-        backdropFilter: "blur(20px)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)",
-          width: 300, height: 200,
-          background: "radial-gradient(circle, rgba(129,140,248,0.2), transparent 70%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ fontSize: 52, marginBottom: 16 }}>⚡</div>
-        <h1 style={{
-          fontFamily: "'Playfair Display', serif",
-          fontSize: 42,
-          fontWeight: 800,
-          color: "#fff",
-          margin: "0 0 12px",
-          letterSpacing: "-0.02em",
-          lineHeight: 1.1,
-        }}>JEE Main × MHT CET</h1>
-        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 16, margin: "0 0 8px" }}>
-          Complete Formula Handbook & Quick Revision Guide
-        </p>
-        <p style={{ color: "rgba(129,140,248,0.8)", fontSize: 13, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          Physics · Chemistry · Mathematics — Class 11 & 12
-        </p>
-
-        {/* Stats */}
-        <div style={{ display: "flex", gap: 16, marginTop: 32, justifyContent: "center", flexWrap: "wrap" }}>
-          {stats.map(s => (
-            <div key={s.label} style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 14,
-              padding: "14px 24px",
-              minWidth: 90,
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif" }}>{s.value}</div>
-              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: "0.1em", marginTop: 2 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Subject Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 32 }}>
-        {Object.entries(SUBJECTS).map(([key, s]) => {
-          const dataMap = { physics: PHYSICS_DATA, chemistry: CHEMISTRY_DATA, mathematics: MATHEMATICS_DATA };
-          const count = dataMap[key].length;
-          return (
-            <button
-              key={key}
-              onClick={() => { setSubject(key); setActiveTopic(dataMap[key][0]?.id || null); }}
-              style={{
-                background: s.bg,
-                border: `1px solid ${s.border}`,
-                borderRadius: 20,
-                padding: "28px 20px",
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "all 0.25s",
-                boxShadow: `0 8px 32px ${s.glow}`,
-              }}
-              className="subject-card"
-            >
-              <div style={{ fontSize: 36, marginBottom: 14 }}>{s.icon}</div>
-              <div style={{ color: "#fff", fontSize: 17, fontWeight: 700, fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>{s.label}</div>
-              <div style={{ color: s.accent, fontSize: 12, opacity: 0.8 }}>{count} Topics</div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Quick Tips */}
-      <div style={{
-        background: "rgba(251,191,36,0.05)",
-        border: "1px solid rgba(251,191,36,0.15)",
-        borderRadius: 16,
-        padding: "20px 24px",
-      }}>
-        <div style={{ color: "#FBBF24", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 12 }}>💡 HOW TO USE</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {[
-            "Select a subject from the sidebar",
-            "Click topics to explore formulas",
-            "Bookmark ★ important formulas",
-            "Look for ★ KEY tag — high priority",
-            "JEE tag = important for JEE Main",
-            "CET tag = important for MHT CET",
-            "⚠️ Avoid the common mistakes listed",
-            "⚡ Tricks save time in exams",
-          ].map((tip, i) => (
-            <div key={i} style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, lineHeight: 1.6 }}>
-              → {tip}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── BOOKMARKS VIEW ────────────────────────────────────────────────────────
-function BookmarksView({ bookmarks, toggleBookmark }) {
-  if (bookmarks.size === 0) {
-    return (
-      <div style={{ textAlign: "center", padding: "80px 24px", color: "rgba(255,255,255,0.3)" }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>★</div>
-        <div style={{ fontSize: 16 }}>No bookmarks yet</div>
-        <div style={{ fontSize: 13, marginTop: 8 }}>Click ☆ on any formula to bookmark it</div>
-      </div>
-    );
-  }
-  const allFormulas = [];
-  [
-    ...PHYSICS_DATA.map(t => ({ ...t, subject: "physics" })),
-    ...CHEMISTRY_DATA.map(t => ({ ...t, subject: "chemistry" })),
-    ...MATHEMATICS_DATA.map(t => ({ ...t, subject: "mathematics" })),
-  ].forEach(topic => {
-    topic.sections.forEach(sec => {
-      sec.formulas && sec.formulas.forEach(f => {
-        if (bookmarks.has(f.label)) {
-          allFormulas.push({ ...f, subject: topic.subject, topic: topic.title });
-        }
+function SearchView({ query, bookmarks, toggleBookmark }) {
+  const dataMap = { physics:PHYSICS_DATA, chemistry:CHEMISTRY_DATA, mathematics:MATHEMATICS_DATA };
+  const q = query.toLowerCase();
+  const results = [];
+  Object.entries(dataMap).forEach(([sub, topics]) => {
+    topics.forEach(topic => {
+      topic.sections.forEach(sec => {
+        sec.formulas && sec.formulas.forEach(f => {
+          if (f.label.toLowerCase().includes(q) || f.tex.toLowerCase().includes(q)) {
+            results.push({ ...f, subject:sub, topic:topic.title, topicId:topic.id });
+          }
+        });
       });
     });
   });
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }}>
-      <h2 style={{ color: "#fff", fontFamily: "'Playfair Display', serif", fontSize: 24, marginBottom: 24 }}>
-        ★ Bookmarked Formulas <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 16 }}>({allFormulas.length})</span>
-      </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {allFormulas.map((f, i) => (
+    <div>
+      <div style={{ color:"rgba(255,255,255,0.4)", fontSize:12, marginBottom:12 }}>
+        {results.length} result{results.length!==1?"s":""} for "{query}"
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {results.map((f,i) => (
           <div key={i}>
-            <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, letterSpacing: "0.08em", marginBottom: 4 }}>
+            <div style={{ color:"rgba(255,255,255,0.3)", fontSize:10, marginBottom:4 }}>
+              {SUBJECTS[f.subject].icon} {SUBJECTS[f.subject].label} · {f.topic}
+            </div>
+            <FormulaCard f={f} subjectColor={SUBJECTS[f.subject].color} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
+          </div>
+        ))}
+        {results.length===0 && (
+          <div style={{ color:"rgba(255,255,255,0.3)", fontSize:14, textAlign:"center", padding:"40px 0" }}>No formulas found</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BookmarksView({ bookmarks, toggleBookmark }) {
+  const allFormulas = [];
+  [
+    ...PHYSICS_DATA.map(t=>({...t,subject:"physics"})),
+    ...CHEMISTRY_DATA.map(t=>({...t,subject:"chemistry"})),
+    ...MATHEMATICS_DATA.map(t=>({...t,subject:"mathematics"})),
+  ].forEach(topic => {
+    topic.sections.forEach(sec => {
+      sec.formulas && sec.formulas.forEach(f => {
+        if (bookmarks.has(f.label)) allFormulas.push({...f, subject:topic.subject, topic:topic.title});
+      });
+    });
+  });
+  if (allFormulas.length===0) return (
+    <div style={{ textAlign:"center", padding:"60px 24px", color:"rgba(255,255,255,0.3)" }}>
+      <div style={{ fontSize:44, marginBottom:14 }}>★</div>
+      <div style={{ fontSize:15 }}>No bookmarks yet</div>
+      <div style={{ fontSize:12, marginTop:6 }}>Tap ☆ on any formula to save it</div>
+    </div>
+  );
+  return (
+    <div>
+      <h2 style={{ color:"#fff", fontSize:17, fontWeight:700, marginBottom:16 }}>★ Saved ({allFormulas.length})</h2>
+      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+        {allFormulas.map((f,i) => (
+          <div key={i}>
+            <div style={{ color:"rgba(255,255,255,0.3)", fontSize:10, marginBottom:4 }}>
               {SUBJECTS[f.subject].icon} {SUBJECTS[f.subject].label} · {f.topic}
             </div>
             <FormulaCard f={f} subjectColor={SUBJECTS[f.subject].color} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
@@ -1649,228 +566,207 @@ function BookmarksView({ bookmarks, toggleBookmark }) {
   );
 }
 
-// ─── MAIN APP ──────────────────────────────────────────────────────────────
+function TopicListView({ subject, onSelect }) {
+  const dataMap = { physics:PHYSICS_DATA, chemistry:CHEMISTRY_DATA, mathematics:MATHEMATICS_DATA };
+  const s = SUBJECTS[subject];
+  const topics = dataMap[subject] || [];
+  return (
+    <div>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:18 }}>
+        <span style={{ fontSize:28 }}>{s.icon}</span>
+        <h2 style={{ color:"#fff", margin:0, fontSize:20, fontWeight:700 }}>{s.label}</h2>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        {topics.map(topic => {
+          const formulaCount = topic.sections.reduce((acc,s)=>acc+(s.formulas?.length||0),0);
+          return (
+            <button
+              key={topic.id}
+              onClick={() => onSelect(topic.id)}
+              style={{ background:s.bg, border:`1px solid ${s.border}`, borderRadius:12, padding:"14px 16px", cursor:"pointer", textAlign:"left", display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}
+            >
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ color:"#fff", fontSize:14, fontWeight:600, marginBottom:4 }}>{topic.title}</div>
+                <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
+                  {topic.tags.map(t=><TagBadge key={t} tag={t}/>)}
+                </div>
+              </div>
+              <div style={{ textAlign:"right", flexShrink:0 }}>
+                <div style={{ color:s.color, fontSize:12, fontWeight:600 }}>{formulaCount}</div>
+                <div style={{ color:"rgba(255,255,255,0.3)", fontSize:9 }}>formulas</div>
+              </div>
+              <span style={{ color:s.color, fontSize:14, flexShrink:0 }}>›</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function HomeView({ onSubjectSelect }) {
+  const stats = [
+    { v:"500+", l:"Formulas", i:"∑" },
+    { v:"34", l:"Topics", i:"📚" },
+    { v:"3", l:"Subjects", i:"⚗" },
+    { v:"100+", l:"Tricks", i:"⚡" },
+  ];
+  const dataMap = { physics:PHYSICS_DATA, chemistry:CHEMISTRY_DATA, mathematics:MATHEMATICS_DATA };
+  return (
+    <div>
+      {/* Hero */}
+      <div style={{ textAlign:"center", padding:"28px 16px 24px", background:"radial-gradient(ellipse at 50% 0%, rgba(129,140,248,0.12), transparent 70%), rgba(255,255,255,0.02)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:20, marginBottom:16 }}>
+        <div style={{ fontSize:40, marginBottom:10 }}>⚡</div>
+        <h1 style={{ fontFamily:"'Playfair Display',serif", fontSize:26, fontWeight:800, color:"#fff", margin:"0 0 6px", lineHeight:1.2 }}>JEE Main × MHT CET</h1>
+        <p style={{ color:"rgba(255,255,255,0.45)", fontSize:13, margin:"0 0 4px" }}>Complete Formula Handbook</p>
+        <p style={{ color:"rgba(129,140,248,0.8)", fontSize:11, letterSpacing:"0.08em", textTransform:"uppercase", margin:0 }}>Physics · Chemistry · Maths</p>
+        <div style={{ display:"flex", gap:8, marginTop:18, justifyContent:"center", flexWrap:"wrap" }}>
+          {stats.map(s=>(
+            <div key={s.l} style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:12, padding:"10px 16px", textAlign:"center" }}>
+              <div style={{ fontSize:18, fontWeight:800, color:"#fff" }}>{s.v}</div>
+              <div style={{ color:"rgba(255,255,255,0.4)", fontSize:9, letterSpacing:"0.1em", marginTop:1 }}>{s.l.toUpperCase()}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Subject cards */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:16 }}>
+        {Object.entries(SUBJECTS).map(([key,s])=>(
+          <button
+            key={key}
+            onClick={() => onSubjectSelect(key)}
+            style={{ background:s.bg, border:`1px solid ${s.border}`, borderRadius:14, padding:"16px 10px", cursor:"pointer", textAlign:"center", boxShadow:`0 6px 20px ${s.glow}` }}
+          >
+            <div style={{ fontSize:28, marginBottom:8 }}>{s.icon}</div>
+            <div style={{ color:"#fff", fontSize:12, fontWeight:700, marginBottom:4 }}>{s.label}</div>
+            <div style={{ color:s.color, fontSize:10 }}>{dataMap[key].length} topics</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Tips */}
+      <div style={{ background:"rgba(251,191,36,0.05)", border:"1px solid rgba(251,191,36,0.15)", borderRadius:14, padding:"14px 16px" }}>
+        <div style={{ color:"#FBBF24", fontSize:10, fontWeight:700, letterSpacing:"0.1em", marginBottom:10 }}>💡 HOW TO USE</div>
+        {["Tap a subject card to browse topics","★ KEY formulas are highest priority","Bookmark ☆ formulas you want to revisit","JEE / CET tags show exam relevance","⚠️ Avoid the listed common mistakes","⚡ Tricks & shortcuts save exam time"].map((tip,i)=>(
+          <div key={i} style={{ color:"rgba(255,255,255,0.5)", fontSize:11, lineHeight:1.7 }}>→ {tip}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [tab, setTab] = useState("home"); // home | study | bookmarks | search
   const [subject, setSubject] = useState("physics");
   const [activeTopic, setActiveTopic] = useState(null);
-  const [view, setView] = useState("home"); // home | study | bookmarks
-  const [searchQuery, setSearchQuery] = useState("");
   const [bookmarks, setBookmarks] = useState(new Set());
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const toggleBookmark = useCallback((id) => {
-    setBookmarks(b => {
-      const nb = new Set(b);
-      nb.has(id) ? nb.delete(id) : nb.add(id);
-      return nb;
-    });
+    setBookmarks(b => { const nb=new Set(b); nb.has(id)?nb.delete(id):nb.add(id); return nb; });
   }, []);
 
-  const dataMap = { physics: PHYSICS_DATA, chemistry: CHEMISTRY_DATA, mathematics: MATHEMATICS_DATA };
-
-  // Search across all data
-  const searchResults = searchQuery.length > 1
-    ? (() => {
-        const q = searchQuery.toLowerCase();
-        const results = [];
-        Object.entries(dataMap).forEach(([sub, topics]) => {
-          topics.forEach(topic => {
-            topic.sections.forEach(sec => {
-              sec.formulas && sec.formulas.forEach(f => {
-                if (f.label.toLowerCase().includes(q) || f.tex.toLowerCase().includes(q)) {
-                  results.push({ ...f, subject: sub, topic: topic.title, topicId: topic.id });
-                }
-              });
-            });
-          });
-        });
-        return results;
-      })()
-    : [];
-
-  const currentTopic = activeTopic && dataMap[subject]?.find(t => t.id === activeTopic);
+  const dataMap = { physics:PHYSICS_DATA, chemistry:CHEMISTRY_DATA, mathematics:MATHEMATICS_DATA };
+  const currentTopic = activeTopic && dataMap[subject]?.find(t=>t.id===activeTopic);
 
   useEffect(() => {
-    // Google Fonts
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap";
     document.head.appendChild(link);
-
     const style = document.createElement("style");
     style.textContent = `
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { background: #060610; font-family: 'DM Sans', sans-serif; color: #fff; min-height: 100vh; }
-      ::-webkit-scrollbar { width: 4px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-      .formula-card:hover { background: rgba(255,255,255,0.07) !important; transform: translateY(-1px); }
-      .section-btn:hover { background: rgba(255,255,255,0.08) !important; }
-      .topic-btn:hover { color: rgba(255,255,255,0.85) !important; background: rgba(255,255,255,0.04) !important; }
-      .subject-card:hover { transform: translateY(-3px); opacity: 0.9; }
-      .nav-btn:hover { background: rgba(255,255,255,0.08) !important; }
-      .katex { font-size: 1em !important; }
-      .katex-display { text-align: left !important; margin: 4px 0 !important; }
+      *{box-sizing:border-box;margin:0;padding:0;}
+      html,body{background:#060610;font-family:'DM Sans',sans-serif;color:#fff;height:100%;overflow:hidden;}
+      #root{height:100%;}
+      ::-webkit-scrollbar{width:3px;height:3px;}
+      ::-webkit-scrollbar-track{background:transparent;}
+      ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px;}
+      button{font-family:'DM Sans',sans-serif;}
+      input{font-family:'DM Sans',sans-serif;}
+      .katex{font-size:1em!important;}
+      .katex-display{text-align:left!important;margin:4px 0!important;}
     `;
     document.head.appendChild(style);
   }, []);
 
+  const showSearch = searchQuery.length > 1;
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#060610" }}>
-      {/* Animated background */}
-      <div style={{
-        position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
-        background: "radial-gradient(ellipse at 20% 20%, rgba(59,130,246,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.03) 0%, transparent 60%)",
-      }} />
-
-      {/* Sidebar */}
-      {sidebarOpen && (
-        <div style={{ position: "relative", zIndex: 10 }}>
-          <Sidebar
-            subject={subject}
-            setSubject={(s) => { setSubject(s); setView("study"); }}
-            activeTopic={activeTopic}
-            setActiveTopic={(id) => { setActiveTopic(id); setView("study"); }}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
+    <div style={{ display:"flex", flexDirection:"column", height:"100%", background:"#060610", position:"relative" }}>
+      {/* Top search bar */}
+      <div style={{ flexShrink:0, padding:"10px 12px 8px", background:"rgba(6,6,16,0.95)", borderBottom:"1px solid rgba(255,255,255,0.07)", display:"flex", gap:8, alignItems:"center", zIndex:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.07)", border:`1px solid ${searchFocused?"rgba(129,140,248,0.4)":"rgba(255,255,255,0.1)"}`, borderRadius:10, padding:"8px 12px", flex:1 }}>
+          <span style={{ color:"rgba(255,255,255,0.35)", fontSize:14 }}>⌕</span>
+          <input
+            value={searchQuery}
+            onChange={e=>setSearchQuery(e.target.value)}
+            onFocus={()=>setSearchFocused(true)}
+            onBlur={()=>setSearchFocused(false)}
+            placeholder="Search formulas..."
+            style={{ background:"transparent", border:"none", color:"#fff", fontSize:13, outline:"none", width:"100%" }}
           />
+          {searchQuery && <button onClick={()=>setSearchQuery("")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.4)", cursor:"pointer", fontSize:14, padding:"0 2px" }}>✕</button>}
         </div>
-      )}
-
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative", zIndex: 1 }}>
-        {/* Topbar */}
-        <div style={{
-          height: 54,
-          background: "rgba(6,6,16,0.85)",
-          backdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          gap: 12,
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          flexShrink: 0,
-        }}>
-          <button
-            onClick={() => setSidebarOpen(o => !o)}
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", borderRadius: 8, width: 32, height: 32, cursor: "pointer", fontSize: 14 }}
-          >☰</button>
-
-          <div style={{ display: "flex", gap: 6 }}>
-            {[
-              { id: "home", label: "🏠 Home" },
-              { id: "study", label: `${SUBJECTS[subject].icon} ${SUBJECTS[subject].label}` },
-              { id: "bookmarks", label: `★ Bookmarks (${bookmarks.size})` },
-            ].map(nav => (
+        {/* Subject quick switcher — only in study tab */}
+        {tab==="study" && !showSearch && (
+          <div style={{ display:"flex", gap:4 }}>
+            {Object.entries(SUBJECTS).map(([key,s])=>(
               <button
-                key={nav.id}
-                onClick={() => setView(nav.id)}
-                className="nav-btn"
-                style={{
-                  padding: "5px 12px",
-                  borderRadius: 8,
-                  border: `1px solid ${view === nav.id ? SUBJECTS[subject].border : "rgba(255,255,255,0.07)"}`,
-                  background: view === nav.id ? SUBJECTS[subject].bg : "transparent",
-                  color: view === nav.id ? SUBJECTS[subject].color : "rgba(255,255,255,0.4)",
-                  fontSize: 12,
-                  fontWeight: view === nav.id ? 600 : 400,
-                  cursor: "pointer",
-                  transition: "all 0.18s",
-                  whiteSpace: "nowrap",
-                }}
-              >{nav.label}</button>
+                key={key}
+                onClick={()=>{ setSubject(key); setActiveTopic(null); }}
+                style={{ width:34, height:34, borderRadius:8, border:`1px solid ${subject===key?s.color+"60":"rgba(255,255,255,0.1)"}`, background:subject===key?s.bg:"transparent", color:subject===key?s.color:"rgba(255,255,255,0.4)", fontSize:15, cursor:"pointer" }}
+                title={s.label}
+              >{s.icon}</button>
             ))}
           </div>
+        )}
+      </div>
 
-          {currentTopic && view === "study" && (
-            <div style={{ marginLeft: "auto", color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
-              {SUBJECTS[subject].icon} {SUBJECTS[subject].label} / {currentTopic.title}
-            </div>
-          )}
-        </div>
+      {/* Main scroll area */}
+      <div style={{ flex:1, overflowY:"auto", padding:"14px 12px", WebkitOverflowScrolling:"touch" }}>
+        {showSearch ? (
+          <SearchView query={searchQuery} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
+        ) : (
+          <>
+            {tab==="home" && (
+              <HomeView onSubjectSelect={(key) => { setSubject(key); setActiveTopic(null); setTab("study"); }} />
+            )}
+            {tab==="study" && (
+              activeTopic && currentTopic
+                ? <TopicView topic={currentTopic} subject={subject} bookmarks={bookmarks} toggleBookmark={toggleBookmark} onBack={()=>setActiveTopic(null)} />
+                : <TopicListView subject={subject} onSelect={(id)=>setActiveTopic(id)} />
+            )}
+            {tab==="bookmarks" && (
+              <BookmarksView bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
+            )}
+          </>
+        )}
+      </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 4px" }}>
-          {/* Search results */}
-          {searchQuery.length > 1 && (
-            <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 20px" }}>
-              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginBottom: 16 }}>
-                {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "{searchQuery}"
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {searchResults.map((f, i) => (
-                  <div key={i}>
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, marginBottom: 4 }}>
-                      {SUBJECTS[f.subject].icon} {SUBJECTS[f.subject].label} · {f.topic}
-                    </div>
-                    <FormulaCard f={f} subjectColor={SUBJECTS[f.subject].color} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
-                  </div>
-                ))}
-                {searchResults.length === 0 && (
-                  <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 14, textAlign: "center", padding: "40px 0" }}>
-                    No formulas found for "{searchQuery}"
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Views */}
-          {!searchQuery.length && (
-            <>
-              {view === "home" && <HomePage setSubject={setSubject} setActiveTopic={(id) => { setActiveTopic(id); setView("study"); }} />}
-              {view === "bookmarks" && <BookmarksView bookmarks={bookmarks} toggleBookmark={toggleBookmark} />}
-              {view === "study" && (
-                <div style={{ maxWidth: 800, margin: "0 auto", padding: "28px 20px" }}>
-                  {!activeTopic ? (
-                    // Subject overview
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-                        <span style={{ fontSize: 36 }}>{SUBJECTS[subject].icon}</span>
-                        <div>
-                          <h2 style={{ color: "#fff", fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 800 }}>{SUBJECTS[subject].label}</h2>
-                          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>Select a topic from the sidebar</div>
-                        </div>
-                      </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
-                        {(dataMap[subject] || []).map(topic => (
-                          <button
-                            key={topic.id}
-                            onClick={() => setActiveTopic(topic.id)}
-                            style={{
-                              background: SUBJECTS[subject].bg,
-                              border: `1px solid ${SUBJECTS[subject].border}`,
-                              borderRadius: 14,
-                              padding: "18px 20px",
-                              cursor: "pointer",
-                              textAlign: "left",
-                              transition: "all 0.2s",
-                              color: "#fff",
-                            }}
-                            className="subject-card"
-                          >
-                            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{topic.title}</div>
-                            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                              {topic.tags.map(t => <TagBadge key={t} tag={t} />)}
-                            </div>
-                            <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 8 }}>
-                              {topic.sections.reduce((acc, s) => acc + (s.formulas?.length || 0), 0)} formulas
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : currentTopic ? (
-                    <TopicView topic={currentTopic} subject={subject} bookmarks={bookmarks} toggleBookmark={toggleBookmark} />
-                  ) : null}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+      {/* Bottom tab bar */}
+      <div style={{ flexShrink:0, background:"rgba(6,6,16,0.97)", borderTop:"1px solid rgba(255,255,255,0.08)", display:"flex", zIndex:10, paddingBottom:"env(safe-area-inset-bottom, 0px)" }}>
+        {[
+          { id:"home", icon:"🏠", label:"Home" },
+          { id:"study", icon:SUBJECTS[subject].icon, label:SUBJECTS[subject].label, color:SUBJECTS[subject].color },
+          { id:"bookmarks", icon:"★", label:`Saved${bookmarks.size>0?` (${bookmarks.size})`:""}` },
+        ].map(t=>{
+          const active = tab===t.id && !showSearch;
+          const color = active ? (t.color||"#818CF8") : "rgba(255,255,255,0.35)";
+          return (
+            <button
+              key={t.id}
+              onClick={() => { setTab(t.id); if(showSearch) setSearchQuery(""); }}
+              style={{ flex:1, padding:"10px 4px 8px", background:"transparent", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}
+            >
+              <span style={{ fontSize:20, lineHeight:1, filter:active?"none":"grayscale(0.5) opacity(0.5)" }}>{t.icon}</span>
+              <span style={{ color, fontSize:10, fontWeight:active?700:400, transition:"color 0.15s" }}>{t.label}</span>
+              {active && <div style={{ width:20, height:2, borderRadius:1, background:t.color||"#818CF8", marginTop:1 }} />}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
