@@ -1,4 +1,5 @@
 export const PHYSICS_DATA = [
+export const PHYSICS_DATA = [
   {
     id: "mechanics",
     title: "Mechanics",
@@ -443,5 +444,5 @@ export const CONSTANTS_DATA = {
     { symbol: "R", name: "Universal gas constant", value: "8.314 J/(mol·K)", tex: "R = 8.314 \\text{ J mol}^{-1}\\text{K}^{-1}" },
     { symbol: "kB", name: "Boltzmann constant", value: "1.38 × 10⁻²³ J/K", tex: "k_B = 1.38 \\times 10^{-23} \\text{ J/K}" },
     { symbol: "1 eV", name: "Electron volt", value: "1.6 × 10⁻¹⁹ J", tex: "1\\text{ eV} = 1.6 \\times 10^{-19} \\text{ J}" },
-    { symbol: "1 atm", name: "Standard atmosphere", value: "1.01 × 10⁵ Pa", tex: "1\\text{ atm} = 1.01 \\times 10^5 \\text{ Pa}" }
-  ]}
+    { symbol: "1 atm", name: "Standard atmosphere", value: "1.01 × 10⁵ Pa", tex: "1\\text{ atm} = 1.01 \\times 10^5 \\text{ Pa}" },
+  ],}
