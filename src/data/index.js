@@ -1,4 +1,4 @@
-export { SUBJECTS } from './subjects.js';
+export { SUBJECTS } from './subjects.jsx';
 export { PHYSICS_DATA } from './physicsData.jsx';
 export { CHEMISTRY_DATA } from './chemistryData.jsx';
 export { MATHEMATICS_DATA } from './mathData.jsx';
@@ -9,4 +9,4 @@ export {
   QUIZ_QUESTIONS,
   DERIVATIONS_DATA,
   UNIT_DATA
-} from './quizData.js';
+} from './quizData.jsx';
