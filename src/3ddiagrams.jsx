@@ -984,10 +984,3 @@ export function Diagrams3DView() {
     </div>
   );
 }
-'''
-
-with open('/mnt/agents/output/3ddiagrams.jsx', 'w') as f:
-    f.write(diagrams_code)
-
-print("3ddiagrams.jsx created successfully!")
-print(f"File size: {len(diagrams_code)} characters")
