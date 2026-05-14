@@ -330,7 +330,7 @@ export const CHEMISTRY_DATA = [
   },
 ];
 
-export chemistry: [
+export const chemistry = [
     { symbol: "NA", name: "Avogadro's number", value: "6.022 × 10²³ mol⁻¹", tex: "N_A = 6.022 \\times 10^{23} \\text{ mol}^{-1}" },
     { symbol: "R", name: "Gas constant", value: "8.314 J/(mol·K) = 0.0821 L·atm/(mol·K)", tex: "R = 8.314 \\text{ J mol}^{-1}\\text{K}^{-1}" },
     { symbol: "Vm(STP)", name: "Molar volume at STP", value: "22.4 L/mol (old) / 22.7 L/mol (IUPAC)", tex: "V_m = 22.4 \\text{ L/mol}" },
