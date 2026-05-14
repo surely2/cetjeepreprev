@@ -1,12 +1,4 @@
-
-# The code is too long for direct string manipulation. Let me create the files properly.
-# First, let me write the 3ddiagrams.jsx file
-
-import os
-os.makedirs('/mnt/agents/output', exist_ok=True)
-
-# Write the 3ddiagrams.jsx file
-diagrams_code = '''import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 // ─── 3D DIAGRAMS VISUALIZER ───────────────────────────────────────────────
 // Interactive Canvas-based diagrams for Physics and Mathematics
