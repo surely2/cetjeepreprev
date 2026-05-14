@@ -344,5 +344,5 @@ export const chemistry = [
     { symbol: "F", name: "Faraday constant", value: "96500 C/mol", tex: "F = 96500 \\text{ C/mol}" },
     { symbol: "Kw", name: "Ionic product of water (25°C)", value: "1 × 10⁻¹⁴", tex: "K_w = 10^{-14} \\text{ (at 25°C)}" },
     { symbol: "1 amu", name: "Atomic mass unit", value: "1.66 × 10⁻²⁷ kg", tex: "1\\text{ amu} = 1.66 \\times 10^{-27} \\text{ kg}" },
-    { symbol: "1 cal", name: "Calorie", value: "4.184 J", tex: "1\\text{ cal} = 4.184 \\text{ J}" },
+    { symbol: "1 cal", name: "Calorie", value: "4.184 J", tex: "1\\text{ cal} = 4.184 \\text{ J}" }
   ]
