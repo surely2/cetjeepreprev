@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─── 3D DIAGRAMS VISUALIZER ───────────────────────────────────────────────
-// Interactive Canvas-based diagrams for Physics and Mathematics
+// ─── GRAPH VISUALIZER ─────────────────────────────────────────────────────────
+// Clean 2D graph plotter for Maths, Physics & Chemistry syllabus curves
 
-function Canvas3D({ width = 400, height = 300, draw, onMouseMove, onClick, style = {} }) {
+// ─── CANVAS PLOTTER ENGINE ────────────────────────────────────────────────────
+function GraphCanvas({ graphs, xRange = [-6, 6], yRange = [-4, 4], width = 340, height = 260, labels = [], points = [], asymptotes = [] }) {
   const canvasRef = useRef(null);
-  const [ctx, setCtx] = useState(null);
+
+  const toScreen = useCallback((x, y, w, h) => {
+    const sx = ((x - xRange[0]) / (xRange[1] - xRange[0])) * w;
+    const sy = h - ((y - yRange[0]) / (yRange[1] - yRange[0])) * h;
+    return [sx, sy];
+  }, [xRange, yRange]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -13,966 +19,1088 @@ function Canvas3D({ width = 400, height = 300, draw, onMouseMove, onClick, style
     const dpr = window.devicePixelRatio || 1;
     canvas.width = width * dpr;
     canvas.height = height * dpr;
-    const c = canvas.getContext('2d');
-    c.scale(dpr, dpr);
-    setCtx(c);
-  }, [width, height]);
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
 
-  useEffect(() => {
-    if (ctx && draw) {
-      ctx.clearRect(0, 0, width, height);
-      draw(ctx, width, height);
+    const W = width, H = height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 1;
+    for (let x = Math.ceil(xRange[0]); x <= xRange[1]; x++) {
+      const [sx] = toScreen(x, 0, W, H);
+      ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
     }
-  }, [ctx, draw, width, height]);
+    for (let y = Math.ceil(yRange[0]); y <= yRange[1]; y++) {
+      const [, sy] = toScreen(0, y, W, H);
+      ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+    }
 
-  const handleMouseMove = (e) => {
-    if (!onMouseMove) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    onMouseMove(e.clientX - rect.left, e.clientY - rect.top);
-  };
+    // Axes
+    const [ox, oy] = toScreen(0, 0, W, H);
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke();
 
-  const handleClick = (e) => {
-    if (!onClick) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    onClick(e.clientX - rect.left, e.clientY - rect.top);
-  };
+    // Axis ticks + labels
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.font = `${Math.max(8, Math.round(W / 42))}px sans-serif`;
+    ctx.textAlign = "center";
+    for (let x = Math.ceil(xRange[0]); x <= xRange[1]; x++) {
+      if (x === 0) continue;
+      const [sx] = toScreen(x, 0, W, H);
+      ctx.fillText(x, sx, Math.min(oy + 13, H - 4));
+      ctx.strokeStyle = "rgba(255,255,255,0.15)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx, oy - 3); ctx.lineTo(sx, oy + 3); ctx.stroke();
+    }
+    ctx.textAlign = "right";
+    for (let y = Math.ceil(yRange[0]); y <= yRange[1]; y++) {
+      if (y === 0) continue;
+      const [, sy] = toScreen(0, y, W, H);
+      ctx.fillText(y, Math.max(ox - 4, 18), sy + 4);
+    }
+    ctx.textAlign = "left";
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillText("x", W - 12, oy - 4);
+    ctx.textAlign = "center";
+    ctx.fillText("y", ox + 10, 10);
+
+    // Asymptotes
+    asymptotes.forEach(({ type, value, color = "rgba(255,100,100,0.35)" }) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      if (type === "vertical") {
+        const [sx] = toScreen(value, 0, W, H);
+        ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, H); ctx.stroke();
+      } else if (type === "horizontal") {
+        const [, sy] = toScreen(0, value, W, H);
+        ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(W, sy); ctx.stroke();
+      } else if (type === "oblique" && value.m !== undefined) {
+        const x0 = xRange[0], x1 = xRange[1];
+        const [sx0, sy0] = toScreen(x0, value.m * x0 + (value.c || 0), W, H);
+        const [sx1, sy1] = toScreen(x1, value.m * x1 + (value.c || 0), W, H);
+        ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    });
+
+    // Curves
+    graphs.forEach(({ fn, color = "#60A5FA", lineWidth = 2.2, dashed = false }) => {
+      const steps = W * 2;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      if (dashed) ctx.setLineDash([5, 4]);
+      else ctx.setLineDash([]);
+
+      let started = false;
+      let prevValid = false;
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const x = xRange[0] + (i / steps) * (xRange[1] - xRange[0]);
+        let y;
+        try { y = fn(x); } catch { y = NaN; }
+        const valid = isFinite(y) && !isNaN(y) && y >= yRange[0] - 1 && y <= yRange[1] + 1;
+        const [sx, sy] = toScreen(x, y, W, H);
+        if (valid) {
+          if (!started || !prevValid) { ctx.moveTo(sx, sy); started = true; }
+          else ctx.lineTo(sx, sy);
+        }
+        prevValid = valid;
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    // Special points
+    points.forEach(({ x, y, color = "#FBBF24", label: lbl, r = 4 }) => {
+      const [sx, sy] = toScreen(x, y, W, H);
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      if (lbl) {
+        ctx.fillStyle = color;
+        ctx.font = `bold ${Math.max(9, Math.round(W / 38))}px sans-serif`;
+        ctx.textAlign = "left";
+        ctx.fillText(lbl, sx + 6, sy - 4);
+      }
+    });
+
+    // Curve labels
+    labels.forEach(({ text, x, y, color = "#fff" }) => {
+      const [sx, sy] = toScreen(x, y, W, H);
+      ctx.fillStyle = color;
+      ctx.font = `bold ${Math.max(9, Math.round(W / 36))}px sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(text, sx, sy);
+    });
+
+  }, [graphs, xRange, yRange, width, height, labels, points, asymptotes, toScreen]);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ width, height, cursor: onMouseMove ? 'crosshair' : 'default', ...style }}
-      onMouseMove={handleMouseMove}
-      onClick={handleClick}
+      style={{
+        width: "100%",
+        height: "auto",
+        borderRadius: 10,
+        display: "block",
+        aspectRatio: `${width}/${height}`,
+        maxWidth: width,
+        margin: "0 auto",
+      }}
     />
   );
 }
 
-// ─── PROJECTILE MOTION SIMULATOR ──────────────────────────────────────────
-function ProjectileMotion() {
-  const [angle, setAngle] = useState(45);
-  const [velocity, setVelocity] = useState(20);
-  const [g, setG] = useState(9.8);
-  const [time, setTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [trail, setTrail] = useState([]);
-  const animRef = useRef(null);
-
-  const rad = (angle * Math.PI) / 180;
-  const vx = velocity * Math.cos(rad);
-  const vy = velocity * Math.sin(rad);
-  const totalTime = (2 * vy) / g;
-  const maxRange = (velocity * velocity * Math.sin(2 * rad)) / g;
-  const maxHeight = (vy * vy) / (2 * g);
-
-  const scale = Math.min(380 / (maxRange || 1), 250 / ((maxHeight || 1) + 10));
-  const originX = 30;
-  const originY = 270;
-
-  const draw = useCallback((ctx, w, h) => {
-    // Grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 10; i++) {
-      ctx.beginPath(); ctx.moveTo(originX + i * 35, 0); ctx.lineTo(originX + i * 35, h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, originY - i * 25); ctx.lineTo(w, originY - i * 25); ctx.stroke();
-    }
-
-    // Axes
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
-
-    // Labels
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('x (m)', w - 40, originY + 15);
-    ctx.fillText('y (m)', originX - 25, 15);
-
-    // Trajectory path
-    ctx.strokeStyle = 'rgba(59,130,246,0.3)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    for (let t = 0; t <= totalTime; t += 0.05) {
-      const x = vx * t;
-      const y = vy * t - 0.5 * g * t * t;
-      const px = originX + x * scale;
-      const py = originY - y * scale;
-      if (t === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Trail
-    trail.forEach((p, i) => {
-      ctx.fillStyle = `rgba(59,130,246,${0.1 + (i / trail.length) * 0.4})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Current position
-    const x = vx * time;
-    const y = vy * time - 0.5 * g * time * time;
-    const px = originX + x * scale;
-    const py = originY - y * scale;
-
-    if (y >= 0) {
-      // Ball
-      ctx.fillStyle = '#3B82F6';
-      ctx.shadowColor = '#3B82F6';
-      ctx.shadowBlur = 15;
-      ctx.beginPath();
-      ctx.arc(px, py, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      // Velocity vector
-      const vxt = vx;
-      const vyt = vy - g * time;
-      ctx.strokeStyle = '#FBBF24';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(px, py);
-      ctx.lineTo(px + vxt * 2, py - vyt * 2);
-      ctx.stroke();
-      ctx.fillStyle = '#FBBF24';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('v', px + vxt * 2 + 5, py - vyt * 2);
-
-      // Angle arc
-      ctx.strokeStyle = 'rgba(251,191,36,0.5)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(originX, originY, 20, -rad, 0);
-      ctx.stroke();
-      ctx.fillStyle = '#FBBF24';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(`${angle}°`, originX + 25, originY - 5);
-    }
-
-    // Ground
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke();
-
-    // Info box
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(w - 140, 10, 130, 70);
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.strokeRect(w - 140, 10, 130, 70);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(`R = ${maxRange.toFixed(1)} m`, w - 130, 30);
-    ctx.fillText(`H = ${maxHeight.toFixed(1)} m`, w - 130, 48);
-    ctx.fillText(`T = ${totalTime.toFixed(2)} s`, w - 130, 66);
-  }, [angle, velocity, g, time, trail, scale, rad, vx, vy, totalTime, maxRange, maxHeight]);
+// ─── GRAPH CARD ───────────────────────────────────────────────────────────────
+function GraphCard({ title, equation, color = "#60A5FA", note, graphs, xRange, yRange, labels, points, asymptotes, badge }) {
+  const containerRef = useRef(null);
+  const [canvasW, setCanvasW] = useState(340);
 
   useEffect(() => {
-    if (isPlaying) {
-      const start = Date.now();
-      const animate = () => {
-        const elapsed = (Date.now() - start) / 1000;
-        if (elapsed >= totalTime) {
-          setTime(totalTime);
-          setIsPlaying(false);
-          return;
-        }
-        setTime(elapsed);
-        setTrail(prev => {
-          const x = originX + vx * elapsed * scale;
-          const y = originY - (vy * elapsed - 0.5 * g * elapsed * elapsed) * scale;
-          const newTrail = [...prev, { x, y }];
-          return newTrail.slice(-50);
-        });
-        animRef.current = requestAnimationFrame(animate);
-      };
-      animRef.current = requestAnimationFrame(animate);
-    }
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, [isPlaying, totalTime, vx, vy, g, scale, originX, originY]);
+    const obs = new ResizeObserver(entries => {
+      const w = entries[0]?.contentRect.width;
+      if (w) setCanvasW(Math.min(Math.floor(w), 420));
+    });
+    if (containerRef.current) obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
 
-  const reset = () => {
-    setTime(0);
-    setTrail([]);
-    setIsPlaying(false);
+  const h = Math.round(canvasW * 0.72);
+
+  return (
+    <div ref={containerRef} style={{
+      background: "rgba(255,255,255,0.03)",
+      border: `1px solid rgba(255,255,255,0.08)`,
+      borderRadius: 14,
+      padding: "14px 14px 12px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+        <div>
+          <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{title}</div>
+          <div style={{ color, fontSize: 12, fontFamily: "monospace", marginTop: 2, wordBreak: "break-all" }}>{equation}</div>
+        </div>
+        {badge && (
+          <span style={{
+            background: `${color}22`, border: `1px solid ${color}44`,
+            color, borderRadius: 6, fontSize: 10, fontWeight: 700, padding: "2px 7px", flexShrink: 0,
+          }}>{badge}</span>
+        )}
+      </div>
+      <GraphCanvas graphs={graphs} xRange={xRange} yRange={yRange} width={canvasW} height={h} labels={labels} points={points} asymptotes={asymptotes} />
+      {note && <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, lineHeight: 1.5 }}>{note}</div>}
+    </div>
+  );
+}
+
+// ─── SECTION HEADER ───────────────────────────────────────────────────────────
+function SectionHeader({ icon, title, color }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "20px 0 12px" }}>
+      <span style={{ fontSize: 18 }}>{icon}</span>
+      <div style={{ color, fontWeight: 700, fontSize: 15, letterSpacing: "-0.01em" }}>{title}</div>
+      <div style={{ flex: 1, height: 1, background: `${color}30`, borderRadius: 1 }} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── TAB: TRIGONOMETRY ───────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+function TrigGraphs() {
+  const [param, setParam] = useState(1);
+  const [phase, setPhase] = useState(0);
+
+  const sinFn = x => param * Math.sin(x - phase * Math.PI / 6);
+  const cosFn = x => param * Math.cos(x - phase * Math.PI / 6);
+
+  return (
+    <div>
+      {/* Interactive sin/cos */}
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 14, marginBottom: 12 }}>
+        <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Interactive sin & cos</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div>
+            <label style={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}>Amplitude A = {param}</label>
+            <input type="range" min="0.5" max="3" step="0.1" value={param} onChange={e => setParam(+e.target.value)} style={{ width: "100%", accentColor: "#60A5FA", marginTop: 4 }} />
+          </div>
+          <div>
+            <label style={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}>Phase φ = {phase}π/6</label>
+            <input type="range" min="-6" max="6" step="1" value={phase} onChange={e => setPhase(+e.target.value)} style={{ width: "100%", accentColor: "#A78BFA", marginTop: 4 }} />
+          </div>
+        </div>
+        <GraphCard
+          title="y = A·sin(x − φ) and y = A·cos(x − φ)"
+          equation={`y = ${param}·sin(x − ${phase}π/6),  y = ${param}·cos(x − ${phase}π/6)`}
+          color="#60A5FA"
+          graphs={[
+            { fn: sinFn, color: "#60A5FA", lineWidth: 2.4 },
+            { fn: cosFn, color: "#A78BFA", lineWidth: 2.4, dashed: false },
+          ]}
+          xRange={[-7, 7]} yRange={[-3.5, 3.5]}
+          note="Blue = sin  |  Purple = cos. Period = 2π, Range = [−A, A]"
+          labels={[
+            { text: "sin", x: 1.2, y: param + 0.2, color: "#60A5FA" },
+            { text: "cos", x: 2.8 - phase * Math.PI / 6, y: param + 0.2, color: "#A78BFA" },
+          ]}
+          points={[
+            { x: Math.PI / 2, y: param, color: "#60A5FA", label: `(π/2,${param})` },
+            { x: -phase * Math.PI / 6, y: param, color: "#A78BFA" },
+          ]}
+        />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        <GraphCard title="y = tan x" equation="y = tan x" color="#FBBF24" badge="⚠ discontinuous"
+          graphs={[{ fn: x => {
+            const t = Math.tan(x);
+            const nearPole = Math.abs(Math.cos(x)) < 0.08;
+            return nearPole ? NaN : t;
+          }, color: "#FBBF24", lineWidth: 2.2 }]}
+          xRange={[-5, 5]} yRange={[-4, 4]}
+          asymptotes={[
+            { type: "vertical", value: Math.PI / 2, color: "rgba(251,191,36,0.3)" },
+            { type: "vertical", value: -Math.PI / 2, color: "rgba(251,191,36,0.3)" },
+            { type: "vertical", value: 3 * Math.PI / 2, color: "rgba(251,191,36,0.3)" },
+            { type: "vertical", value: -3 * Math.PI / 2, color: "rgba(251,191,36,0.3)" },
+          ]}
+          note="Vertical asymptotes at x = (2n+1)π/2. Period = π."
+        />
+
+        <GraphCard title="y = cot x" equation="y = cot x" color="#F472B6"
+          graphs={[{ fn: x => {
+            const nearPole = Math.abs(Math.sin(x)) < 0.08;
+            return nearPole ? NaN : Math.cos(x) / Math.sin(x);
+          }, color: "#F472B6", lineWidth: 2.2 }]}
+          xRange={[-5, 5]} yRange={[-4, 4]}
+          asymptotes={[
+            { type: "vertical", value: 0, color: "rgba(244,114,182,0.3)" },
+            { type: "vertical", value: Math.PI, color: "rgba(244,114,182,0.3)" },
+            { type: "vertical", value: -Math.PI, color: "rgba(244,114,182,0.3)" },
+          ]}
+          note="Vertical asymptotes at x = nπ. Period = π."
+        />
+
+        <GraphCard title="y = sec x" equation="y = sec x = 1/cos x" color="#34D399"
+          graphs={[{ fn: x => {
+            const c = Math.cos(x);
+            return Math.abs(c) < 0.08 ? NaN : 1 / c;
+          }, color: "#34D399", lineWidth: 2 },
+          { fn: Math.cos, color: "rgba(52,211,153,0.25)", lineWidth: 1.5, dashed: true }]}
+          xRange={[-7, 7]} yRange={[-4, 4]}
+          note="Range: (−∞,−1]∪[1,+∞). Dashed = cos x for reference."
+        />
+
+        <GraphCard title="y = cosec x" equation="y = cosec x = 1/sin x" color="#FB923C"
+          graphs={[{ fn: x => {
+            const s = Math.sin(x);
+            return Math.abs(s) < 0.08 ? NaN : 1 / s;
+          }, color: "#FB923C", lineWidth: 2 },
+          { fn: Math.sin, color: "rgba(251,146,60,0.25)", lineWidth: 1.5, dashed: true }]}
+          xRange={[-7, 7]} yRange={[-4, 4]}
+          note="Range: (−∞,−1]∪[1,+∞). Dashed = sin x for reference."
+        />
+
+        <GraphCard title="y = sin⁻¹ x (arcsin)" equation="y = sin⁻¹ x,  x ∈ [−1, 1]" color="#60A5FA" badge="inverse"
+          graphs={[{ fn: x => (x >= -1 && x <= 1) ? Math.asin(x) : NaN, color: "#60A5FA", lineWidth: 2.5 }]}
+          xRange={[-2, 2]} yRange={[-2, 2]}
+          points={[{ x: -1, y: -Math.PI / 2, color: "#60A5FA", label: "(−1,−π/2)" }, { x: 1, y: Math.PI / 2, color: "#60A5FA", label: "(1,π/2)" }]}
+          note="Domain: [−1,1]. Range: [−π/2, π/2] ≈ [−1.57, 1.57]."
+        />
+
+        <GraphCard title="y = cos⁻¹ x (arccos)" equation="y = cos⁻¹ x,  x ∈ [−1, 1]" color="#A78BFA" badge="inverse"
+          graphs={[{ fn: x => (x >= -1 && x <= 1) ? Math.acos(x) : NaN, color: "#A78BFA", lineWidth: 2.5 }]}
+          xRange={[-2, 2]} yRange={[-0.5, 3.8]}
+          points={[{ x: -1, y: Math.PI, color: "#A78BFA", label: "(−1,π)" }, { x: 1, y: 0, color: "#A78BFA", label: "(1,0)" }]}
+          note="Domain: [−1,1]. Range: [0, π] ≈ [0, 3.14]."
+        />
+
+        <GraphCard title="y = tan⁻¹ x (arctan)" equation="y = tan⁻¹ x" color="#FBBF24" badge="inverse"
+          graphs={[{ fn: Math.atan, color: "#FBBF24", lineWidth: 2.5 }]}
+          xRange={[-6, 6]} yRange={[-2, 2]}
+          asymptotes={[
+            { type: "horizontal", value: Math.PI / 2, color: "rgba(251,191,36,0.3)" },
+            { type: "horizontal", value: -Math.PI / 2, color: "rgba(251,191,36,0.3)" },
+          ]}
+          note="Domain: ℝ. Range: (−π/2, π/2). Horizontal asymptotes at ±π/2."
+        />
+
+        <GraphCard title="y = |sin x|" equation="y = |sin x|" color="#F472B6"
+          graphs={[{ fn: x => Math.abs(Math.sin(x)), color: "#F472B6", lineWidth: 2 }]}
+          xRange={[-7, 7]} yRange={[-0.3, 1.5]}
+          note="Always ≥ 0. Period = π (half of sin x). Touches x-axis at nπ."
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── TAB: CONICS ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+function ConicGraphs() {
+  const [a, setA] = useState(2);
+  const [b, setB] = useState(1);
+
+  const c_ell = Math.sqrt(Math.max(0, a * a - b * b));
+  const c_hyp = Math.sqrt(a * a + b * b);
+
+  return (
+    <div>
+      {/* Interactive ellipse/hyperbola */}
+      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 14, marginBottom: 12 }}>
+        <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Interactive Ellipse & Hyperbola</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div>
+            <label style={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}>a = {a}</label>
+            <input type="range" min="1" max="4" step="0.5" value={a} onChange={e => setA(+e.target.value)} style={{ width: "100%", accentColor: "#60A5FA", marginTop: 4 }} />
+          </div>
+          <div>
+            <label style={{ color: "rgba(255,255,255,0.5)", fontSize: 11 }}>b = {b}</label>
+            <input type="range" min="0.5" max="3.5" step="0.5" value={b} onChange={e => setB(+e.target.value)} style={{ width: "100%", accentColor: "#34D399", marginTop: 4 }} />
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+          <GraphCard
+            title={`Ellipse: x²/${a}² + y²/${b}² = 1`}
+            equation={`e = c/a = ${(c_ell / a).toFixed(2)}  |  c = ${c_ell.toFixed(2)}`}
+            color="#60A5FA" badge="e < 1"
+            graphs={[
+              { fn: x => (Math.abs(x) <= a) ? b * Math.sqrt(1 - (x * x) / (a * a)) : NaN, color: "#60A5FA", lineWidth: 2.5 },
+              { fn: x => (Math.abs(x) <= a) ? -b * Math.sqrt(1 - (x * x) / (a * a)) : NaN, color: "#60A5FA", lineWidth: 2.5 },
+            ]}
+            xRange={[-5, 5]} yRange={[-3.5, 3.5]}
+            points={[
+              { x: c_ell, y: 0, color: "#FBBF24", label: `F₁(${c_ell.toFixed(1)},0)` },
+              { x: -c_ell, y: 0, color: "#FBBF24", label: `F₂` },
+              { x: a, y: 0, color: "#60A5FA", label: `(${a},0)` },
+              { x: -a, y: 0, color: "#60A5FA", label: `(−${a},0)` },
+              { x: 0, y: b, color: "#34D399", label: `(0,${b})` },
+            ]}
+            note={`Foci at (±${c_ell.toFixed(2)},0). Sum of focal distances = 2a = ${2 * a}.`}
+          />
+          <GraphCard
+            title={`Hyperbola: x²/${a}² − y²/${b}² = 1`}
+            equation={`e = ${(c_hyp / a).toFixed(2)}  |  asymptotes: y = ±${(b / a).toFixed(2)}x`}
+            color="#F472B6" badge="e > 1"
+            graphs={[
+              { fn: x => (Math.abs(x) >= a) ? b * Math.sqrt((x * x) / (a * a) - 1) : NaN, color: "#F472B6", lineWidth: 2.5 },
+              { fn: x => (Math.abs(x) >= a) ? -b * Math.sqrt((x * x) / (a * a) - 1) : NaN, color: "#F472B6", lineWidth: 2.5 },
+            ]}
+            xRange={[-5, 5]} yRange={[-4, 4]}
+            asymptotes={[
+              { type: "oblique", value: { m: b / a, c: 0 }, color: "rgba(244,114,182,0.35)" },
+              { type: "oblique", value: { m: -b / a, c: 0 }, color: "rgba(244,114,182,0.35)" },
+            ]}
+            points={[
+              { x: a, y: 0, color: "#F472B6", label: `(${a},0)` },
+              { x: -a, y: 0, color: "#F472B6", label: `(−${a},0)` },
+              { x: c_hyp, y: 0, color: "#FBBF24", label: `F₁` },
+              { x: -c_hyp, y: 0, color: "#FBBF24", label: `F₂` },
+            ]}
+            note={`Asymptotes y = ±(b/a)x dashed. Foci at (±${c_hyp.toFixed(2)},0).`}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        <GraphCard title="Parabola: y² = 4ax (a=1)" equation="y² = 4x → opens right. Focus (1,0)" color="#FBBF24"
+          graphs={[
+            { fn: x => x >= 0 ? 2 * Math.sqrt(x) : NaN, color: "#FBBF24", lineWidth: 2.5 },
+            { fn: x => x >= 0 ? -2 * Math.sqrt(x) : NaN, color: "#FBBF24", lineWidth: 2.5 },
+          ]}
+          xRange={[-1.5, 5]} yRange={[-4, 4]}
+          points={[{ x: 1, y: 0, color: "#FBBF24", label: "F(1,0)" }, { x: 0, y: 0, color: "#fff", label: "V" }]}
+          asymptotes={[{ type: "vertical", value: -1, color: "rgba(251,191,36,0.3)" }]}
+          note="Directrix x = −1. Vertex at origin. Latus rectum = 4a = 4."
+        />
+
+        <GraphCard title="Parabola: x² = 4ay (a=1)" equation="x² = 4y → opens up. Focus (0,1)" color="#34D399"
+          graphs={[{ fn: x => x * x / 4, color: "#34D399", lineWidth: 2.5 }]}
+          xRange={[-5, 5]} yRange={[-1, 5]}
+          points={[{ x: 0, y: 1, color: "#FBBF24", label: "F(0,1)" }, { x: 0, y: 0, color: "#fff", label: "V" }]}
+          note="Directrix y = −1. Opens upward. Axis of symmetry = y-axis."
+        />
+
+        <GraphCard title="Parabola: y² = −4ax (a=1)" equation="y² = −4x → opens left" color="#FB923C"
+          graphs={[
+            { fn: x => x <= 0 ? 2 * Math.sqrt(-x) : NaN, color: "#FB923C", lineWidth: 2.5 },
+            { fn: x => x <= 0 ? -2 * Math.sqrt(-x) : NaN, color: "#FB923C", lineWidth: 2.5 },
+          ]}
+          xRange={[-5, 1.5]} yRange={[-4, 4]}
+          points={[{ x: -1, y: 0, color: "#FBBF24", label: "F(−1,0)" }]}
+          note="Focus at (−a,0). Directrix x = a. Opens left."
+        />
+
+        <GraphCard title="Rectangular Hyperbola: xy = 1" equation="xy = c² with c=1" color="#A78BFA"
+          graphs={[
+            { fn: x => x === 0 ? NaN : (Math.abs(x) < 0.05 ? NaN : 1 / x), color: "#A78BFA", lineWidth: 2.2 },
+          ]}
+          xRange={[-5, 5]} yRange={[-4, 4]}
+          asymptotes={[
+            { type: "vertical", value: 0, color: "rgba(167,139,250,0.3)" },
+            { type: "horizontal", value: 0, color: "rgba(167,139,250,0.3)" },
+          ]}
+          note="Asymptotes are coordinate axes. Eccentricity e = √2."
+        />
+
+        <GraphCard title="Circle: x² + y² = r²" equation="x² + y² = 9, r = 3" color="#60A5FA"
+          graphs={[
+            { fn: x => Math.abs(x) <= 3 ? Math.sqrt(9 - x * x) : NaN, color: "#60A5FA", lineWidth: 2.5 },
+            { fn: x => Math.abs(x) <= 3 ? -Math.sqrt(9 - x * x) : NaN, color: "#60A5FA", lineWidth: 2.5 },
+          ]}
+          xRange={[-4.5, 4.5]} yRange={[-3.5, 3.5]}
+          points={[{ x: 0, y: 0, color: "#FBBF24", label: "O(0,0)" }, { x: 3, y: 0, color: "#60A5FA", label: "(3,0)" }]}
+          note="Center (0,0), radius = 3. e = 0 (special conic)."
+        />
+
+        <GraphCard title="General Conics Summary" equation="h²−ab: <0 ellipse, =0 parabola, >0 hyperbola" color="#FBBF24"
+          graphs={[
+            { fn: x => Math.abs(x) <= 2.5 ? 1.5 * Math.sqrt(1 - x * x / 6.25) : NaN, color: "#60A5FA", lineWidth: 2 },
+            { fn: x => Math.abs(x) <= 2.5 ? -1.5 * Math.sqrt(1 - x * x / 6.25) : NaN, color: "#60A5FA", lineWidth: 2 },
+            { fn: x => x >= 0 ? 1.5 * Math.sqrt(x) : NaN, color: "#FBBF24", lineWidth: 2 },
+            { fn: x => x >= 0 ? -1.5 * Math.sqrt(x) : NaN, color: "#FBBF24", lineWidth: 2 },
+            { fn: x => Math.abs(x) >= 1.5 ? 1.2 * Math.sqrt(x * x / 2.25 - 1) : NaN, color: "#F472B6", lineWidth: 2 },
+            { fn: x => Math.abs(x) >= 1.5 ? -1.2 * Math.sqrt(x * x / 2.25 - 1) : NaN, color: "#F472B6", lineWidth: 2 },
+          ]}
+          xRange={[-5, 5]} yRange={[-3, 3]}
+          labels={[
+            { text: "Ellipse", x: -0.6, y: 1.7, color: "#60A5FA" },
+            { text: "Parabola", x: 2.5, y: 2.2, color: "#FBBF24" },
+            { text: "Hyperbola", x: 2.8, y: 0.8, color: "#F472B6" },
+          ]}
+          note="All three conics shown together for comparison."
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── TAB: ALGEBRA / FUNCTIONS ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+function AlgebraGraphs() {
+  return (
+    <div>
+      <SectionHeader icon="📈" title="Standard Functions" color="#A78BFA" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="y = xⁿ family" equation="y = x, x², x³, x⁴" color="#A78BFA"
+          graphs={[
+            { fn: x => x, color: "#60A5FA", lineWidth: 1.8 },
+            { fn: x => x * x, color: "#A78BFA", lineWidth: 2 },
+            { fn: x => x * x * x, color: "#FBBF24", lineWidth: 2 },
+            { fn: x => x * x * x * x, color: "#34D399", lineWidth: 2 },
+          ]}
+          xRange={[-2.5, 2.5]} yRange={[-4, 4]}
+          labels={[
+            { text: "x", x: 1.6, y: 1.4, color: "#60A5FA" },
+            { text: "x²", x: 1.6, y: 2.8, color: "#A78BFA" },
+            { text: "x³", x: 1.4, y: -2.8, color: "#FBBF24" },
+            { text: "x⁴", x: 1.8, y: 3.5, color: "#34D399" },
+          ]}
+          note="Odd powers: pass through origin, point symmetry. Even powers: parabola-like, axis symmetry."
+        />
+
+        <GraphCard title="y = eˣ and y = ln x" equation="Natural exponential & logarithm" color="#34D399"
+          graphs={[
+            { fn: x => Math.exp(x), color: "#34D399", lineWidth: 2.2 },
+            { fn: x => x > 0 ? Math.log(x) : NaN, color: "#FBBF24", lineWidth: 2.2 },
+            { fn: x => x, color: "rgba(255,255,255,0.15)", lineWidth: 1.5, dashed: true },
+          ]}
+          xRange={[-3, 4]} yRange={[-3, 4]}
+          points={[
+            { x: 0, y: 1, color: "#34D399", label: "(0,1)" },
+            { x: 1, y: 0, color: "#FBBF24", label: "(1,0)" },
+          ]}
+          note="Green = eˣ. Yellow = ln x. They're reflections over y = x (dashed)."
+        />
+
+        <GraphCard title="y = aˣ (a>1 and 0<a<1)" equation="Growth vs decay: 2ˣ and (0.5)ˣ" color="#60A5FA"
+          graphs={[
+            { fn: x => Math.pow(2, x), color: "#60A5FA", lineWidth: 2.2 },
+            { fn: x => Math.pow(0.5, x), color: "#FB923C", lineWidth: 2.2 },
+          ]}
+          xRange={[-4, 4]} yRange={[-0.5, 5]}
+          points={[
+            { x: 0, y: 1, color: "#fff", label: "(0,1)" },
+          ]}
+          asymptotes={[{ type: "horizontal", value: 0, color: "rgba(255,255,255,0.15)" }]}
+          note="Blue = 2ˣ (growth). Orange = 0.5ˣ (decay). Both pass through (0,1)."
+        />
+
+        <GraphCard title="y = 1/x and y = 1/x²" equation="Rational functions" color="#F472B6"
+          graphs={[
+            { fn: x => Math.abs(x) < 0.05 ? NaN : 1 / x, color: "#F472B6", lineWidth: 2 },
+            { fn: x => Math.abs(x) < 0.05 ? NaN : 1 / (x * x), color: "#FBBF24", lineWidth: 2 },
+          ]}
+          xRange={[-4, 4]} yRange={[-4, 4]}
+          asymptotes={[
+            { type: "vertical", value: 0, color: "rgba(244,114,182,0.3)" },
+            { type: "horizontal", value: 0, color: "rgba(244,114,182,0.2)" },
+          ]}
+          note="Pink = 1/x (odd fn). Yellow = 1/x² (even fn, always ≥ 0)."
+        />
+
+        <GraphCard title="y = √x and y = ∛x" equation="Root functions" color="#34D399"
+          graphs={[
+            { fn: x => x >= 0 ? Math.sqrt(x) : NaN, color: "#34D399", lineWidth: 2.2 },
+            { fn: x => x >= 0 ? Math.cbrt(x) : -Math.cbrt(-x), color: "#A78BFA", lineWidth: 2.2 },
+          ]}
+          xRange={[-3, 5]} yRange={[-2.5, 2.5]}
+          note="Green = √x (domain x≥0). Purple = ∛x (domain ℝ, odd function)."
+        />
+
+        <GraphCard title="y = |x| and y = [x] (floor)" equation="Absolute value & greatest integer" color="#FBBF24"
+          graphs={[
+            { fn: x => Math.abs(x), color: "#FBBF24", lineWidth: 2.2 },
+            { fn: x => Math.floor(x), color: "#F472B6", lineWidth: 2 },
+          ]}
+          xRange={[-4, 4]} yRange={[-3, 4]}
+          note="Yellow = |x|, V-shape at origin. Pink = ⌊x⌋, staircase (right-continuous)."
+        />
+
+        <GraphCard title="y = x·sin(x)" equation="Damped oscillation shape" color="#60A5FA"
+          graphs={[
+            { fn: x => x * Math.sin(x), color: "#60A5FA", lineWidth: 2 },
+            { fn: x => x, color: "rgba(255,255,255,0.15)", lineWidth: 1, dashed: true },
+            { fn: x => -x, color: "rgba(255,255,255,0.15)", lineWidth: 1, dashed: true },
+          ]}
+          xRange={[-8, 8]} yRange={[-8, 8]}
+          note="Envelope = ±x. Oscillates within envelope. Useful for understanding modulated signals."
+        />
+
+        <GraphCard title="Signum & Step functions" equation="sgn(x) and u(x)" color="#A78BFA"
+          graphs={[
+            { fn: x => Math.abs(x) < 0.05 ? 0 : Math.sign(x), color: "#A78BFA", lineWidth: 2.2 },
+            { fn: x => x < 0 ? 0 : 1, color: "#34D399", lineWidth: 2.2 },
+          ]}
+          xRange={[-4, 4]} yRange={[-1.5, 1.8]}
+          note="Purple = sgn(x) ∈ {−1,0,1}. Green = Heaviside step u(x)."
+        />
+      </div>
+
+      <SectionHeader icon="📉" title="Straight Lines & Quadratics" color="#60A5FA" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        <GraphCard title="y = mx + c family" equation="Lines with different slopes" color="#60A5FA"
+          graphs={[
+            { fn: x => 2 * x - 1, color: "#60A5FA", lineWidth: 2 },
+            { fn: x => -x + 2, color: "#F472B6", lineWidth: 2 },
+            { fn: x => 0.5 * x + 0, color: "#34D399", lineWidth: 2 },
+            { fn: x => 3, color: "#FBBF24", lineWidth: 1.8 },
+          ]}
+          xRange={[-4, 4]} yRange={[-4, 5]}
+          labels={[
+            { text: "m=2", x: 1, y: 3.5, color: "#60A5FA" },
+            { text: "m=−1", x: -0.5, y: 3.5, color: "#F472B6" },
+            { text: "m=0.5", x: 2.5, y: 1.9, color: "#34D399" },
+            { text: "y=3", x: 2.5, y: 3.2, color: "#FBBF24" },
+          ]}
+          note="Slope m = tan θ. Parallel lines have equal slopes. m₁m₂ = −1 for perpendicular."
+        />
+
+        <GraphCard title="Quadratic y = ax² + bx + c" equation="y = x²−2x−1 (discriminant > 0)" color="#A78BFA"
+          graphs={[
+            { fn: x => x * x - 2 * x - 1, color: "#A78BFA", lineWidth: 2.5 },
+          ]}
+          xRange={[-2.5, 4.5]} yRange={[-3.5, 5]}
+          points={[
+            { x: 1, y: -2, color: "#FBBF24", label: "vertex" },
+            { x: 1 + Math.sqrt(2), y: 0, color: "#A78BFA", label: "x₁" },
+            { x: 1 - Math.sqrt(2), y: 0, color: "#A78BFA", label: "x₂" },
+          ]}
+          note="Vertex at (h,k) = (1,−2). D = b²−4ac > 0 → 2 real roots."
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── TAB: PHYSICS GRAPHS ─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+function PhysicsGraphs() {
+  return (
+    <div>
+      <SectionHeader icon="🏃" title="Kinematics & Mechanics" color="#3B82F6" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="s–t graphs (kinematics)" equation="Uniform and accelerated motion" color="#60A5FA"
+          graphs={[
+            { fn: x => x >= 0 ? 1.5 * x : NaN, color: "#60A5FA", lineWidth: 2, },
+            { fn: x => x >= 0 ? 0.5 * x * x : NaN, color: "#FBBF24", lineWidth: 2 },
+            { fn: x => x >= 0 ? 3 * x - 0.5 * x * x : NaN, color: "#34D399", lineWidth: 2 },
+          ]}
+          xRange={[-0.5, 5]} yRange={[-0.5, 8]}
+          labels={[
+            { text: "uniform", x: 3.5, y: 5.5, color: "#60A5FA" },
+            { text: "accel.", x: 3.5, y: 7.5, color: "#FBBF24" },
+            { text: "decel.", x: 2.3, y: 5.0, color: "#34D399" },
+          ]}
+          note="Slope of s–t = velocity. Straight line → constant v. Curve → acceleration."
+        />
+
+        <GraphCard title="v–t graphs (kinematics)" equation="Velocity vs time" color="#34D399"
+          graphs={[
+            { fn: x => x >= 0 ? 2 : NaN, color: "#60A5FA", lineWidth: 2 },
+            { fn: x => x >= 0 ? 0.8 * x : NaN, color: "#FBBF24", lineWidth: 2 },
+            { fn: x => (x >= 0 && x <= 4) ? 4 - x : NaN, color: "#34D399", lineWidth: 2 },
+          ]}
+          xRange={[-0.5, 5.5]} yRange={[-0.5, 4.5]}
+          labels={[
+            { text: "const v", x: 3.5, y: 2.3, color: "#60A5FA" },
+            { text: "a=const", x: 3.5, y: 3.5, color: "#FBBF24" },
+            { text: "decel.", x: 1, y: 3.5, color: "#34D399" },
+          ]}
+          note="Slope of v–t = acceleration. Area under v–t = displacement."
+        />
+
+        <GraphCard title="Projectile trajectory" equation="y = x·tanθ − gx²/(2u²cos²θ)" color="#FBBF24"
+          graphs={[
+            { fn: x => (x >= 0 && x <= 4) ? x * 1 - 0.5 * x * x * 0.5 : NaN, color: "#FBBF24", lineWidth: 2.5 },
+            { fn: x => (x >= 0 && x <= 5.5) ? x * 1.2 - 0.5 * x * x * 0.42 : NaN, color: "#60A5FA", lineWidth: 2 },
+          ]}
+          xRange={[-0.5, 6]} yRange={[-0.5, 2.5]}
+          note="Parabolic path. Max range at θ=45°. Same range for θ and (90°−θ)."
+        />
+
+        <GraphCard title="Spring: F = −kx (Hooke's Law)" equation="Force vs displacement, k=1.5" color="#34D399"
+          graphs={[
+            { fn: x => -1.5 * x, color: "#34D399", lineWidth: 2.5 },
+          ]}
+          xRange={[-3, 3]} yRange={[-4, 4]}
+          note="Linear restoring force. Slope = −k. PE = ½kx² (parabola in U–x graph)."
+          points={[{ x: 0, y: 0, color: "#34D399", label: "eq." }]}
+        />
+
+        <GraphCard title="Gravitational g vs r" equation="g = GM/r²  (outside) and g = GMr/R³ (inside)" color="#A78BFA"
+          graphs={[
+            { fn: x => x > 0 ? 1 / (x * x) : NaN, color: "#A78BFA", lineWidth: 2.2 },
+            { fn: x => (x >= 0 && x <= 1) ? x : NaN, color: "#FBBF24", lineWidth: 2.2 },
+          ]}
+          xRange={[-0.2, 4]} yRange={[-0.2, 3]}
+          points={[{ x: 1, y: 1, color: "#fff", label: "R (surface)" }]}
+          note="Yellow = inside Earth (g ∝ r). Purple = outside (g ∝ 1/r²). Max at surface."
+        />
+
+        <GraphCard title="SHM: x, v, a vs t" equation="x = A·cos(ωt)" color="#60A5FA"
+          graphs={[
+            { fn: x => x >= 0 ? 2 * Math.cos(x) : NaN, color: "#60A5FA", lineWidth: 2 },
+            { fn: x => x >= 0 ? -2 * Math.sin(x) : NaN, color: "#34D399", lineWidth: 2 },
+            { fn: x => x >= 0 ? -2 * Math.cos(x) : NaN, color: "#F472B6", lineWidth: 1.8, dashed: false },
+          ]}
+          xRange={[-0.3, 7]} yRange={[-2.5, 2.5]}
+          labels={[
+            { text: "x", x: 0.5, y: 2.2, color: "#60A5FA" },
+            { text: "v", x: 1.1, y: -2.2, color: "#34D399" },
+            { text: "a", x: Math.PI, y: 2.2, color: "#F472B6" },
+          ]}
+          note="Blue = displacement. Green = velocity (90° ahead). Pink = acceleration (180° out of phase)."
+        />
+      </div>
+
+      <SectionHeader icon="🌡" title="Thermodynamics Graphs" color="#FB923C" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="P–V diagrams (thermodynamic processes)" equation="Isothermal: PV=const | Adiabatic: PVᵞ=const" color="#FB923C"
+          graphs={[
+            { fn: x => x > 0.2 ? 2 / x : NaN, color: "#60A5FA", lineWidth: 2.2 },
+            { fn: x => x > 0.3 ? 1.5 / Math.pow(x, 1.4) : NaN, color: "#FB923C", lineWidth: 2.2 },
+          ]}
+          xRange={[0, 4]} yRange={[0, 5]}
+          labels={[
+            { text: "Isothermal", x: 2, y: 1.3, color: "#60A5FA" },
+            { text: "Adiabatic", x: 1.5, y: 0.7, color: "#FB923C" },
+          ]}
+          note="Adiabatic is steeper than isothermal. Area under P–V = work done by gas."
+        />
+
+        <GraphCard title="Newton's Law of Cooling" equation="T = T₀ + (Tᵢ−T₀)e^(−kt)" color="#34D399"
+          graphs={[
+            { fn: x => x >= 0 ? 1 + 3 * Math.exp(-0.5 * x) : NaN, color: "#34D399", lineWidth: 2.5 },
+          ]}
+          xRange={[-0.5, 8]} yRange={[-0.2, 4.5]}
+          asymptotes={[{ type: "horizontal", value: 1, color: "rgba(52,211,153,0.3)" }]}
+          note="Exponential decay toward ambient temperature T₀ (dashed). Rate ∝ temperature excess."
+          points={[{ x: 0, y: 4, color: "#34D399", label: "Tᵢ" }]}
+        />
+
+        <GraphCard title="Wien's Displacement: Intensity vs λ" equation="Blackbody radiation spectrum" color="#FBBF24"
+          graphs={[
+            { fn: x => x > 0.2 ? 2 * x * x * x / (Math.exp(2 / x) - 1) * 2 : NaN, color: "#FBBF24", lineWidth: 2.2 },
+            { fn: x => x > 0.1 ? x * x * x / (Math.exp(1.5 / x) - 1) * 2.5 : NaN, color: "#FB923C", lineWidth: 2, dashed: false },
+          ]}
+          xRange={[0, 5]} yRange={[0, 3]}
+          labels={[
+            { text: "High T", x: 1.5, y: 2.6, color: "#FBBF24" },
+            { text: "Low T", x: 2.2, y: 1.2, color: "#FB923C" },
+          ]}
+          note="Peak λ shifts left (shorter λ, bluer) for higher T. Wien: λₘT = 2.898×10⁻³ m·K."
+        />
+      </div>
+
+      <SectionHeader icon="⚡" title="Electricity & Magnetism" color="#FBBF24" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="Ohm's Law: V–I graph" equation="V = IR (linear), resistor" color="#FBBF24"
+          graphs={[
+            { fn: x => x >= 0 ? 2 * x : NaN, color: "#FBBF24", lineWidth: 2.5 },
+            { fn: x => x >= 0 ? 0.5 * x : NaN, color: "#60A5FA", lineWidth: 2, dashed: false },
+          ]}
+          xRange={[-0.3, 4]} yRange={[-0.3, 5]}
+          labels={[
+            { text: "R=2Ω", x: 1.5, y: 3.5, color: "#FBBF24" },
+            { text: "R=0.5Ω", x: 3, y: 1.8, color: "#60A5FA" },
+          ]}
+          note="Slope = R (resistance). Steeper slope = higher resistance."
+        />
+
+        <GraphCard title="Charging & discharging capacitor" equation="q = Q₀(1−e^(−t/RC))  and  q = Q₀e^(−t/RC)" color="#A78BFA"
+          graphs={[
+            { fn: x => x >= 0 ? 2 * (1 - Math.exp(-x)) : NaN, color: "#A78BFA", lineWidth: 2.2 },
+            { fn: x => x >= 0 ? 2 * Math.exp(-x) : NaN, color: "#F472B6", lineWidth: 2.2 },
+          ]}
+          xRange={[-0.3, 6]} yRange={[-0.2, 2.5]}
+          asymptotes={[{ type: "horizontal", value: 2, color: "rgba(167,139,250,0.3)" }]}
+          note="Purple = charging (→Q₀). Pink = discharging (→0). Time constant τ = RC."
+        />
+
+        <GraphCard title="AC signals: sin wave" equation="V = Vₘsin(ωt),  I = Iₘsin(ωt+φ)" color="#60A5FA"
+          graphs={[
+            { fn: x => 2 * Math.sin(x), color: "#60A5FA", lineWidth: 2.2 },
+            { fn: x => 1.5 * Math.sin(x + Math.PI / 4), color: "#FBBF24", lineWidth: 2 },
+          ]}
+          xRange={[-0.5, 7.5]} yRange={[-2.5, 2.5]}
+          note="Blue = voltage. Yellow = current (leading by π/4). Vrms = Vₘ/√2."
+        />
+
+        <GraphCard title="Electric field: point charge E vs r" equation="E = kq/r² (inverse square)" color="#34D399"
+          graphs={[{ fn: x => x > 0.15 ? 1 / (x * x) : NaN, color: "#34D399", lineWidth: 2.5 }]}
+          xRange={[0, 5]} yRange={[-0.2, 5]}
+          note="E ∝ 1/r². Diverges at r→0. Field lines radiate outward from positive charge."
+        />
+      </div>
+
+      <SectionHeader icon="💡" title="Optics" color="#A78BFA" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+        <GraphCard title="Lens formula: image distance v vs u" equation="1/v − 1/u = 1/f,  f=2" color="#A78BFA"
+          graphs={[{
+            fn: u => {
+              if (Math.abs(u) < 0.1 || u === 2) return NaN;
+              const v = 1 / (1 / 2 + 1 / u);
+              return (isFinite(v) && Math.abs(v) < 10) ? v : NaN;
+            }, color: "#A78BFA", lineWidth: 2.2
+          }]}
+          xRange={[-8, 8]} yRange={[-8, 8]}
+          asymptotes={[
+            { type: "vertical", value: -2, color: "rgba(167,139,250,0.3)" },
+            { type: "horizontal", value: 2, color: "rgba(167,139,250,0.3)" },
+          ]}
+          note="Asymptotes when object/image at focal point. Sign convention: distances measured from lens."
+        />
+
+        <GraphCard title="YDSE fringe intensity" equation="I = 4I₀·cos²(δ/2)" color="#FBBF24"
+          graphs={[{ fn: x => 4 * Math.cos(x / 2) ** 2, color: "#FBBF24", lineWidth: 2.5 }]}
+          xRange={[-7, 7]} yRange={[-0.3, 4.5]}
+          note="Peaks at δ = 2nπ (bright fringes). Zeros at δ = (2n+1)π (dark fringes). β = λD/d."
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── TAB: CHEMISTRY GRAPHS ────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+function ChemGraphs() {
+  return (
+    <div>
+      <SectionHeader icon="⚗" title="Atomic Structure" color="#10B981" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="Bohr energy levels: Eₙ vs n" equation="Eₙ = −13.6/n² eV" color="#34D399"
+          graphs={[{
+            fn: x => (x >= 1 && x <= 6) ? -13.6 / (x * x) : NaN,
+            color: "#34D399", lineWidth: 0
+          }]}
+          xRange={[0, 7]} yRange={[-14, 1]}
+          points={[
+            { x: 1, y: -13.6, color: "#34D399", label: "n=1 (−13.6 eV)", r: 5 },
+            { x: 2, y: -3.4, color: "#34D399", label: "n=2 (−3.4)", r: 5 },
+            { x: 3, y: -13.6 / 9, color: "#34D399", label: "n=3", r: 5 },
+            { x: 4, y: -13.6 / 16, color: "#60A5FA", label: "n=4", r: 4 },
+            { x: 5, y: -13.6 / 25, color: "#60A5FA", label: "n=5", r: 4 },
+          ]}
+          asymptotes={[{ type: "horizontal", value: 0, color: "rgba(52,211,153,0.3)" }]}
+          note="Energies converge to 0 (ionization) as n→∞. Ground state n=1 is lowest."
+        />
+
+        <GraphCard title="Photoelectric effect: KE vs ν" equation="KE = hν − φ (threshold ν₀)" color="#FBBF24"
+          graphs={[
+            { fn: x => x >= 2 ? (x - 2) : NaN, color: "#FBBF24", lineWidth: 2.5 },
+          ]}
+          xRange={[-0.3, 5]} yRange={[-0.5, 3]}
+          points={[{ x: 2, y: 0, color: "#FBBF24", label: "ν₀ (threshold)" }]}
+          asymptotes={[{ type: "horizontal", value: 0, color: "rgba(255,255,255,0.1)" }]}
+          note="Slope = h (Planck's constant). X-intercept = threshold frequency ν₀. KE independent of intensity."
+        />
+
+        <GraphCard title="de Broglie: λ vs mv (momentum)" equation="λ = h/p = h/(mv)" color="#A78BFA"
+          graphs={[{ fn: x => x > 0.1 ? 1 / x : NaN, color: "#A78BFA", lineWidth: 2.5 }]}
+          xRange={[0, 5]} yRange={[0, 5]}
+          note="Wavelength decreases as momentum increases (inverse relation). λ→0 for macroscopic objects."
+        />
+      </div>
+
+      <SectionHeader icon="⚖" title="Equilibrium & Thermodynamics" color="#10B981" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="Reaction coordinate diagram" equation="ΔH = E_products − E_reactants" color="#FB923C"
+          graphs={[
+            { fn: x => (x >= 0 && x <= 5) ? 3 * Math.exp(-0.5 * (x - 2) ** 2) - 1 : NaN, color: "#F472B6", lineWidth: 2.5 },
+          ]}
+          xRange={[-0.3, 5.3]} yRange={[-1.5, 2.5]}
+          points={[
+            { x: 0, y: 0.5, color: "#34D399", label: "Reactants" },
+            { x: 2, y: 2.06, color: "#F472B6", label: "Ea (transition)" },
+            { x: 4.5, y: -0.6, color: "#FB923C", label: "Products (exo)" },
+          ]}
+          note="Pink curve = energy profile. Ea = activation energy. ΔH < 0 shown (exothermic)."
+        />
+
+        <GraphCard title="Rate laws: [A] vs t" equation="Zero, 1st & 2nd order reactions" color="#34D399"
+          graphs={[
+            { fn: x => x >= 0 ? Math.max(0, 2 - 0.4 * x) : NaN, color: "#60A5FA", lineWidth: 2 },
+            { fn: x => x >= 0 ? 2 * Math.exp(-0.5 * x) : NaN, color: "#34D399", lineWidth: 2 },
+            { fn: x => x >= 0 ? 2 / (1 + 2 * x) : NaN, color: "#FB923C", lineWidth: 2 },
+          ]}
+          xRange={[-0.3, 6]} yRange={[-0.2, 2.5]}
+          labels={[
+            { text: "0th", x: 1, y: 1.7, color: "#60A5FA" },
+            { text: "1st", x: 2.5, y: 0.8, color: "#34D399" },
+            { text: "2nd", x: 4, y: 0.4, color: "#FB923C" },
+          ]}
+          note="0th: linear decay. 1st: exponential (t½ = ln2/k). 2nd: slowest decay."
+        />
+
+        <GraphCard title="Arrhenius: ln k vs 1/T" equation="ln k = ln A − Ea/(RT)" color="#A78BFA"
+          graphs={[{ fn: x => -2 * x + 3, color: "#A78BFA", lineWidth: 2.5 }]}
+          xRange={[0, 3]} yRange={[-3, 3]}
+          note="Slope = −Ea/R. Y-intercept = ln A. Plot of ln k vs 1/T is a straight line."
+        />
+
+        <GraphCard title="pH vs volume (acid-base titration)" equation="Strong acid titrated with strong base" color="#34D399"
+          graphs={[{
+            fn: x => {
+              if (x < 0 || x > 4) return NaN;
+              if (Math.abs(x - 2) < 0.05) return 7;
+              if (x < 2) return 1 - 2 * Math.log10(2 - x + 0.01);
+              return 13 + 2 * Math.log10(x - 2 + 0.01);
+            }, color: "#34D399", lineWidth: 2.5
+          }]}
+          xRange={[-0.2, 4.2]} yRange={[0, 14]}
+          points={[
+            { x: 2, y: 7, color: "#FBBF24", label: "equiv. pt (pH=7)" },
+          ]}
+          asymptotes={[{ type: "horizontal", value: 7, color: "rgba(251,191,36,0.2)" }]}
+          note="Rapid pH jump at equivalence point. Buffer region has gradual slope."
+        />
+
+        <GraphCard title="Van't Hoff: ln Kc vs 1/T" equation="ln K = −ΔH°/RT + ΔS°/R" color="#FBBF24"
+          graphs={[
+            { fn: x => -1.5 * x + 2, color: "#FBBF24", lineWidth: 2.2 },
+            { fn: x => 1.5 * x - 1, color: "#F472B6", lineWidth: 2.2 },
+          ]}
+          xRange={[0, 3]} yRange={[-4, 3]}
+          labels={[
+            { text: "Exothermic", x: 1, y: 0.7, color: "#FBBF24" },
+            { text: "Endothermic", x: 0.3, y: -0.7, color: "#F472B6" },
+          ]}
+          note="Yellow = exothermic (K decreases as T increases). Pink = endothermic (K increases)."
+        />
+
+        <GraphCard title="Maxwell-Boltzmann distribution" equation="Fraction of molecules vs speed" color="#60A5FA"
+          graphs={[
+            { fn: x => x > 0 ? 2 * x * x * Math.exp(-0.4 * x * x) : NaN, color: "#60A5FA", lineWidth: 2.2 },
+            { fn: x => x > 0 ? 2 * x * x * Math.exp(-0.25 * x * x) : NaN, color: "#F472B6", lineWidth: 2, dashed: false },
+          ]}
+          xRange={[0, 5]} yRange={[0, 1.5]}
+          labels={[
+            { text: "High T", x: 3.5, y: 0.7, color: "#F472B6" },
+            { text: "Low T", x: 1.8, y: 1.3, color: "#60A5FA" },
+          ]}
+          note="Higher T: flatter, broader, peak shifts right. Area under curve = constant (all molecules)."
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── TAB: CALCULUS ────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+function CalculusGraphs() {
+  return (
+    <div>
+      <SectionHeader icon="∫" title="Differentiation" color="#8B5CF6" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="Function & its derivative" equation="f(x) = x³−3x and f'(x) = 3x²−3" color="#A78BFA"
+          graphs={[
+            { fn: x => x * x * x - 3 * x, color: "#A78BFA", lineWidth: 2.5 },
+            { fn: x => 3 * x * x - 3, color: "#FBBF24", lineWidth: 2, dashed: false },
+          ]}
+          xRange={[-3, 3]} yRange={[-5, 5]}
+          points={[
+            { x: -1, y: 2, color: "#A78BFA", label: "local max" },
+            { x: 1, y: -2, color: "#A78BFA", label: "local min" },
+            { x: -1, y: 0, color: "#FBBF24", label: "f'=0" },
+            { x: 1, y: 0, color: "#FBBF24", label: "f'=0" },
+          ]}
+          note="Purple = f(x). Yellow = f'(x). Where f' = 0 → turning points of f."
+        />
+
+        <GraphCard title="Increasing/decreasing behavior" equation="f'(x) > 0: increasing | f'(x) < 0: decreasing" color="#34D399"
+          graphs={[
+            { fn: x => 0.5 * x * x - x - 1, color: "#34D399", lineWidth: 2.5 },
+            { fn: x => x - 1, color: "#FBBF24", lineWidth: 1.8, dashed: false },
+          ]}
+          xRange={[-2, 4]} yRange={[-3, 3]}
+          points={[{ x: 1, y: -1.5, color: "#FBBF24", label: "minimum" }]}
+          note="Green parabola. At x=1, f'=0 (vertex). Yellow = tangent slope at vertex."
+        />
+
+        <GraphCard title="Concavity & inflection point" equation="f(x) = x³, f''(x) = 6x" color="#60A5FA"
+          graphs={[
+            { fn: x => x * x * x, color: "#60A5FA", lineWidth: 2.5 },
+            { fn: x => 6 * x, color: "#F472B6", lineWidth: 1.8 },
+          ]}
+          xRange={[-2.5, 2.5]} yRange={[-5, 5]}
+          points={[{ x: 0, y: 0, color: "#FBBF24", label: "inflection" }]}
+          note="Blue = x³. Pink = f''(x) = 6x. Inflection point where f'' changes sign (x=0)."
+        />
+      </div>
+
+      <SectionHeader icon="∫" title="Integration" color="#8B5CF6" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 12 }}>
+
+        <GraphCard title="Area under curve: ∫₀² x² dx" equation="∫₀² x² dx = [x³/3]₀² = 8/3" color="#A78BFA"
+          graphs={[{ fn: x => x * x, color: "#A78BFA", lineWidth: 2.5 }]}
+          xRange={[-0.5, 3]} yRange={[-0.3, 5]}
+          points={[
+            { x: 0, y: 0, color: "#34D399", label: "a=0" },
+            { x: 2, y: 4, color: "#34D399", label: "b=2" },
+          ]}
+          note="Shaded area between x=0 and x=2 = 8/3 ≈ 2.67. Area = ∫f(x)dx."
+        />
+
+        <GraphCard title="Fundamental theorem of calculus" equation="d/dx[∫ₐˣ f(t)dt] = f(x)" color="#34D399"
+          graphs={[
+            { fn: x => Math.sin(x), color: "#34D399", lineWidth: 2.2 },
+            { fn: x => 1 - Math.cos(x), color: "#FBBF24", lineWidth: 2.2 },
+          ]}
+          xRange={[-1, 7.5]} yRange={[-1.5, 2.5]}
+          note="Green = f(x) = sin x. Yellow = F(x) = ∫₀ˣ sin t dt = 1−cos x. dF/dx = f(x)."
+        />
+
+        <GraphCard title="Improper integral: 1/x² (convergent)" equation="∫₁^∞ 1/x² dx = 1" color="#FB923C"
+          graphs={[{ fn: x => x > 0.2 ? 1 / (x * x) : NaN, color: "#FB923C", lineWidth: 2.5 }]}
+          xRange={[0, 5]} yRange={[0, 5]}
+          note="Converges to 1. ∫₁^∞ xⁿ dx diverges for n ≥ −1, converges for n < −1."
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+export function Diagrams3DView() {
+  const [tab, setTab] = useState("trig");
+
+  const tabs = [
+    { id: "trig", icon: "〰️", label: "Trig" },
+    { id: "conics", icon: "⬭", label: "Conics" },
+    { id: "algebra", icon: "f(x)", label: "Functions" },
+    { id: "calculus", icon: "∫", label: "Calculus" },
+    { id: "physics", icon: "⚛", label: "Physics" },
+    { id: "chem", icon: "⚗", label: "Chemistry" },
+  ];
+
+  const renderTab = () => {
+    if (tab === "trig") return <TrigGraphs />;
+    if (tab === "conics") return <ConicGraphs />;
+    if (tab === "algebra") return <AlgebraGraphs />;
+    if (tab === "calculus") return <CalculusGraphs />;
+    if (tab === "physics") return <PhysicsGraphs />;
+    if (tab === "chem") return <ChemGraphs />;
   };
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>🎯</span>
-        <div>
-          <div style={{ color: '#fff', fontSize: 15, fontWeight: 600 }}>Projectile Motion</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>Interactive simulation with velocity vectors</div>
-        </div>
-      </div>
-
-      <Canvas3D width={400} height={300} draw={draw} style={{ width: '100%', maxWidth: 400, height: 'auto', aspectRatio: '4/3', borderRadius: 10, background: 'rgba(0,0,0,0.2)' }} />
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 16 }}>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Angle: {angle}°</label>
-          <input type="range" min="0" max="90" value={angle} onChange={e => { setAngle(Number(e.target.value)); reset(); }}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Velocity: {velocity} m/s</label>
-          <input type="range" min="5" max="50" value={velocity} onChange={e => { setVelocity(Number(e.target.value)); reset(); }}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>g: {g} m/s²</label>
-          <input type="range" min="1" max="20" step="0.1" value={g} onChange={e => { setG(Number(e.target.value)); reset(); }}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-        <button onClick={() => { reset(); setIsPlaying(true); }} style={{
-          background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.4)', color: '#3B82F6',
-          borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'inherit', flex: 1
-        }}>{isPlaying ? '⏸ Pause' : '▶ Launch'}</button>
-        <button onClick={reset} style={{
-          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)',
-          borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontFamily: 'inherit'
-        }}>↺ Reset</button>
-      </div>
-
-      <div style={{ marginTop: 12, padding: 10, background: 'rgba(59,130,246,0.05)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.15)' }}>
-        <div style={{ color: '#3B82F6', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>KEY FORMULAS</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' }}>
-          R = u²sin(2θ)/g &nbsp;&nbsp; H = u²sin²θ/(2g) &nbsp;&nbsp; T = 2usinθ/g
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── SHM (SIMPLE HARMONIC MOTION) ─────────────────────────────────────────
-function SHMDiagram() {
-  const [A, setA] = useState(100);
-  const [omega, setOmega] = useState(2);
-  const [phase, setPhase] = useState(0);
-  const [showComponents, setShowComponents] = useState(true);
-  const [time, setTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const animRef = useRef(null);
-
-  const width = 400, height = 280;
-  const cx = 200, cy = 140;
-
-  const draw = useCallback((ctx, w, h) => {
-    ctx.clearRect(0, 0, w, h);
-
-    // Grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 1;
-    for (let i = -4; i <= 4; i++) {
-      ctx.beginPath(); ctx.moveTo(cx + i * 40, 0); ctx.lineTo(cx + i * 40, h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, cy + i * 30); ctx.lineTo(w, cy + i * 30); ctx.stroke();
-    }
-
-    // Axes
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
-
-    // Circle reference
-    ctx.strokeStyle = 'rgba(139,92,246,0.3)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath(); ctx.arc(cx, cy, A, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Current position on circle
-    const theta = omega * time + phase;
-    const px = cx + A * Math.cos(theta);
-    const py = cy - A * Math.sin(theta);
-
-    // Radius line
-    ctx.strokeStyle = 'rgba(139,92,246,0.6)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
-
-    // Point on circle
-    ctx.fillStyle = '#8B5CF6';
-    ctx.shadowColor = '#8B5CF6';
-    ctx.shadowBlur = 12;
-    ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowBlur = 0;
-
-    if (showComponents) {
-      // X component (projection)
-      ctx.strokeStyle = 'rgba(59,130,246,0.6)';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, cy); ctx.stroke();
-      ctx.fillStyle = '#3B82F6';
-      ctx.beginPath(); ctx.arc(px, cy, 4, 0, Math.PI * 2); ctx.fill();
-
-      // Y component
-      ctx.strokeStyle = 'rgba(16,185,129,0.6)';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx, py); ctx.stroke();
-      ctx.fillStyle = '#10B981';
-      ctx.beginPath(); ctx.arc(cx, py, 4, 0, Math.PI * 2); ctx.fill();
-    }
-
-    // Wave trace
-    ctx.strokeStyle = 'rgba(139,92,246,0.4)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let t = 0; t <= time; t += 0.02) {
-      const x = cx + A * Math.cos(omega * t + phase);
-      const y = cy - A * Math.sin(omega * t + phase);
-      if (t === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Labels
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText('x = Acos(ωt)', 10, 20);
-    ctx.fillText('y = Asin(ωt)', 10, 35);
-    ctx.fillText(`θ = ${(theta % (2 * Math.PI)).toFixed(2)} rad`, 10, 50);
-
-    // Info
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(w - 130, 10, 120, 55);
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.strokeRect(w - 130, 10, 120, 55);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(`A = ${A}px`, w - 120, 28);
-    ctx.fillText(`ω = ${omega} rad/s`, w - 120, 44);
-    ctx.fillText(`T = ${(2 * Math.PI / omega).toFixed(2)}s`, w - 120, 60);
-  }, [A, omega, phase, time, showComponents]);
-
-  useEffect(() => {
-    if (isPlaying) {
-      const start = Date.now();
-      const animate = () => {
-        const elapsed = (Date.now() - start) / 1000;
-        setTime(elapsed);
-        animRef.current = requestAnimationFrame(animate);
-      };
-      animRef.current = requestAnimationFrame(animate);
-    }
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, [isPlaying]);
-
-  return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>〰️</span>
-        <div>
-          <div style={{ color: '#fff', fontSize: 15, fontWeight: 600 }}>Simple Harmonic Motion</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>Circular reference with component projections</div>
-        </div>
-      </div>
-
-      <Canvas3D width={width} height={height} draw={draw} style={{ width: '100%', maxWidth: 400, height: 'auto', aspectRatio: '10/7', borderRadius: 10, background: 'rgba(0,0,0,0.2)' }} />
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginTop: 16 }}>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Amplitude: {A}</label>
-          <input type="range" min="30" max="120" value={A} onChange={e => { setA(Number(e.target.value)); setTime(0); }}
-            style={{ width: '100%', accentColor: '#8B5CF6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>ω: {omega}</label>
-          <input type="range" min="0.5" max="5" step="0.1" value={omega} onChange={e => { setOmega(Number(e.target.value)); setTime(0); }}
-            style={{ width: '100%', accentColor: '#8B5CF6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Phase: {phase.toFixed(1)}</label>
-          <input type="range" min="0" max={Math.PI * 2} step="0.1" value={phase} onChange={e => { setPhase(Number(e.target.value)); setTime(0); }}
-            style={{ width: '100%', accentColor: '#8B5CF6' }} />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => setIsPlaying(!isPlaying)} style={{
-          background: 'rgba(139,92,246,0.2)', border: '1px solid rgba(139,92,246,0.4)', color: '#8B5CF6',
-          borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'inherit', flex: 1
-        }}>{isPlaying ? '⏸ Pause' : '▶ Animate'}</button>
-        <button onClick={() => { setTime(0); setIsPlaying(false); }} style={{
-          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)',
-          borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontFamily: 'inherit'
-        }}>↺ Reset</button>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer' }}>
-          <input type="checkbox" checked={showComponents} onChange={e => setShowComponents(e.target.checked)} style={{ accentColor: '#8B5CF6' }} />
-          Show Components
-        </label>
-      </div>
-
-      <div style={{ marginTop: 12, padding: 10, background: 'rgba(139,92,246,0.05)', borderRadius: 8, border: '1px solid rgba(139,92,246,0.15)' }}>
-        <div style={{ color: '#8B5CF6', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>KEY FORMULAS</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' }}>
-          x = Acos(ωt + φ) &nbsp;&nbsp; v = -Aωsin(ωt + φ) &nbsp;&nbsp; a = -Aω²cos(ωt + φ)
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── OPTICS - REFRACTION SIMULATOR ────────────────────────────────────────
-function RefractionDiagram() {
-  const [n1, setN1] = useState(1.0);
-  const [n2, setN2] = useState(1.5);
-  const [incidentAngle, setIncidentAngle] = useState(30);
-  const [showNormal, setShowNormal] = useState(true);
-
-  const rad = (incidentAngle * Math.PI) / 180;
-  const sinR = (n1 * Math.sin(rad)) / n2;
-  const refractedAngle = sinR <= 1 ? (Math.asin(sinR) * 180) / Math.PI : null;
-  const isTIR = sinR > 1;
-
-  const width = 400, height = 300;
-  const cx = 200, cy = 150;
-  const rayLen = 120;
-
-  const draw = useCallback((ctx, w, h) => {
-    ctx.clearRect(0, 0, w, h);
-
-    // Media backgrounds
-    ctx.fillStyle = 'rgba(59,130,246,0.08)';
-    ctx.fillRect(0, 0, w, cy);
-    ctx.fillStyle = 'rgba(16,185,129,0.08)';
-    ctx.fillRect(0, cy, w, h - cy);
-
-    // Interface line
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
-
-    // Normal
-    if (showNormal) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-      ctx.setLineDash([5, 5]);
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, h - 20); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    // Incident ray
-    const ix = cx - rayLen * Math.sin(rad);
-    const iy = cy - rayLen * Math.cos(rad);
-    ctx.strokeStyle = '#3B82F6';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(ix, iy); ctx.lineTo(cx, cy); ctx.stroke();
-
-    // Arrow on incident
-    const midIx = (cx + ix) / 2;
-    const midIy = (cy + iy) / 2;
-    ctx.fillStyle = '#3B82F6';
-    ctx.beginPath();
-    ctx.moveTo(midIx, midIy);
-    ctx.lineTo(midIx - 8, midIy - 5);
-    ctx.lineTo(midIx - 8, midIy + 5);
-    ctx.fill();
-
-    // Refracted ray or TIR
-    if (!isTIR && refractedAngle !== null) {
-      const rRad = (refractedAngle * Math.PI) / 180;
-      const rx = cx + rayLen * Math.sin(rRad);
-      const ry = cy + rayLen * Math.cos(rRad);
-      ctx.strokeStyle = '#10B981';
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(rx, ry); ctx.stroke();
-
-      // Arrow
-      const midRx = (cx + rx) / 2;
-      const midRy = (cy + ry) / 2;
-      ctx.fillStyle = '#10B981';
-      ctx.beginPath();
-      ctx.moveTo(midRx, midRy);
-      ctx.lineTo(midRx + 8, midRy - 5);
-      ctx.lineTo(midRx + 8, midRy + 5);
-      ctx.fill();
-    } else {
-      // Total Internal Reflection
-      const reflectRad = rad;
-      const rx = cx + rayLen * Math.sin(reflectRad);
-      const ry = cy - rayLen * Math.cos(reflectRad);
-      ctx.strokeStyle = '#EF4444';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([6, 4]);
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(rx, ry); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    // Angle arcs
-    ctx.strokeStyle = 'rgba(251,191,36,0.6)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(cx, cy, 25, -Math.PI / 2 - rad, -Math.PI / 2); ctx.stroke();
-    if (!isTIR && refractedAngle !== null) {
-      const rRad = (refractedAngle * Math.PI) / 180;
-      ctx.beginPath(); ctx.arc(cx, cy, 35, Math.PI / 2, Math.PI / 2 + rRad); ctx.stroke();
-    }
-
-    // Labels
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = '12px sans-serif';
-    ctx.fillText(`n₁ = ${n1}`, 20, 30);
-    ctx.fillText(`n₂ = ${n2}`, 20, h - 20);
-    ctx.fillText(`i = ${incidentAngle}°`, cx - 60, cy - 60);
-    if (!isTIR && refractedAngle !== null) {
-      ctx.fillText(`r = ${refractedAngle.toFixed(1)}°`, cx + 20, cy + 60);
-    } else {
-      ctx.fillStyle = '#EF4444';
-      ctx.fillText('TIR!', cx + 20, cy + 60);
-    }
-
-    // Snell's law box
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(w - 160, 10, 150, 50);
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.strokeRect(w - 160, 10, 150, 50);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(`n₁sin(i) = n₂sin(r)`, w - 150, 28);
-    ctx.fillText(`${n1}×sin(${incidentAngle}°) = ${n2}×sin(${isTIR ? '—' : refractedAngle.toFixed(1) + '°'})`, w - 150, 46);
-  }, [n1, n2, incidentAngle, rad, isTIR, refractedAngle, showNormal]);
-
-  return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>💎</span>
-        <div>
-          <div style={{ color: '#fff', fontSize: 15, fontWeight: 600 }}>Refraction & TIR</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>Snell's law with total internal reflection</div>
-        </div>
-      </div>
-
-      <Canvas3D width={width} height={height} draw={draw} style={{ width: '100%', maxWidth: 400, height: 'auto', aspectRatio: '4/3', borderRadius: 10, background: 'rgba(0,0,0,0.2)' }} />
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginTop: 16 }}>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>n₁ (incident): {n1}</label>
-          <input type="range" min="1" max="2.5" step="0.1" value={n1} onChange={e => setN1(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>n₂ (refracted): {n2}</label>
-          <input type="range" min="1" max="2.5" step="0.1" value={n2} onChange={e => setN2(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#10B981' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Angle of incidence: {incidentAngle}°</label>
-          <input type="range" min="0" max="90" value={incidentAngle} onChange={e => setIncidentAngle(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#FBBF24' }} />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer' }}>
-          <input type="checkbox" checked={showNormal} onChange={e => setShowNormal(e.target.checked)} style={{ accentColor: '#818CF8' }} />
-          Show Normal
-        </label>
-        {isTIR && (
-          <span style={{ color: '#EF4444', fontSize: 12, fontWeight: 600, background: 'rgba(239,68,68,0.1)', padding: '4px 10px', borderRadius: 6 }}>
-            ⚠️ Total Internal Reflection!
-          </span>
-        )}
-      </div>
-
-      <div style={{ marginTop: 12, padding: 10, background: 'rgba(16,185,129,0.05)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.15)' }}>
-        <div style={{ color: '#10B981', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>SNELL'S LAW</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' }}>
-          n₁ sin θ₁ = n₂ sin θ₂ &nbsp;&nbsp; Critical angle: sin⁻¹(n₂/n₁) when n₁ {'>'} n₂
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── CONIC SECTIONS VISUALIZER ────────────────────────────────────────────
-function ConicSections() {
-  const [type, setType] = useState('parabola');
-  const [a, setA] = useState(50);
-
-  const width = 400, height = 300;
-  const cx = 200, cy = 150;
-
-  const draw = useCallback((ctx, w, h) => {
-    ctx.clearRect(0, 0, w, h);
-
-    // Grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-    ctx.lineWidth = 1;
-    for (let i = -5; i <= 5; i++) {
-      ctx.beginPath(); ctx.moveTo(cx + i * 40, 0); ctx.lineTo(cx + i * 40, h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, cy + i * 30); ctx.lineTo(w, cy + i * 30); ctx.stroke();
-    }
-
-    // Axes
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
-
-    ctx.strokeStyle = '#8B5CF6';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-
-    if (type === 'parabola') {
-      // y² = 4ax → x = y²/(4a)
-      for (let y = -100; y <= 100; y += 2) {
-        const x = (y * y) / (4 * a);
-        const px = cx + x;
-        const py = cy - y;
-        if (y === -100) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-      // Focus
-      ctx.fillStyle = '#FBBF24';
-      ctx.beginPath(); ctx.arc(cx + a, cy, 4, 0, Math.PI * 2); ctx.fill();
-      // Directrix
-      ctx.strokeStyle = 'rgba(251,191,36,0.4)';
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(cx - a, 0); ctx.lineTo(cx - a, h); ctx.stroke();
-      ctx.setLineDash([]);
-      // Latus rectum
-      ctx.strokeStyle = 'rgba(239,68,68,0.4)';
-      ctx.beginPath(); ctx.moveTo(cx + a, cy - 2 * a); ctx.lineTo(cx + a, cy + 2 * a); ctx.stroke();
-    } else if (type === 'ellipse') {
-      const b = a * 0.6;
-      ctx.beginPath(); ctx.ellipse(cx, cy, a, b, 0, 0, Math.PI * 2); ctx.stroke();
-      const c = Math.sqrt(a * a - b * b);
-      ctx.fillStyle = '#FBBF24';
-      ctx.beginPath(); ctx.arc(cx - c, cy, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx + c, cy, 4, 0, Math.PI * 2); ctx.fill();
-      // Major axis
-      ctx.strokeStyle = 'rgba(251,191,36,0.3)';
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath(); ctx.moveTo(cx - a, cy); ctx.lineTo(cx + a, cy); ctx.stroke();
-      ctx.setLineDash([]);
-    } else if (type === 'hyperbola') {
-      const b = a * 0.6;
-      // Right branch
-      for (let x = a; x <= 180; x += 2) {
-        const y = b * Math.sqrt((x * x) / (a * a) - 1);
-        const px = cx + x;
-        const py1 = cy - y;
-        const py2 = cy + y;
-        if (x === a) { ctx.moveTo(px, py1); }
-        else { ctx.lineTo(px, py1); }
-      }
-      ctx.stroke();
-      // Left branch
-      ctx.beginPath();
-      for (let x = a; x <= 180; x += 2) {
-        const y = b * Math.sqrt((x * x) / (a * a) - 1);
-        const px = cx - x;
-        const py1 = cy - y;
-        if (x === a) { ctx.moveTo(px, py1); }
-        else { ctx.lineTo(px, py1); }
-      }
-      ctx.stroke();
-      // Asymptotes
-      ctx.strokeStyle = 'rgba(239,68,68,0.3)';
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 150, cy - 150 * b / a); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 150, cy + 150 * b / a); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - 150, cy - 150 * b / a); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - 150, cy + 150 * b / a); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    // Labels
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '11px sans-serif';
-    if (type === 'parabola') {
-      ctx.fillText('Focus', cx + a + 8, cy - 8);
-      ctx.fillText('Directrix', cx - a - 50, cy - 10);
-      ctx.fillText('Latus Rectum = 4a', cx + a + 8, cy + 20);
-    } else if (type === 'ellipse') {
-      ctx.fillText('Foci', cx - c - 30, cy - 8);
-      ctx.fillText('2a (major axis)', cx - 20, cy + 20);
-    } else if (type === 'hyperbola') {
-      ctx.fillText('Asymptotes', cx + 100, cy - 80);
-    }
-  }, [type, a, cx, cy]);
-
-  return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>📐</span>
-        <div>
-          <div style={{ color: '#fff', fontSize: 15, fontWeight: 600 }}>Conic Sections</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>Parabola, Ellipse, Hyperbola with key elements</div>
-        </div>
-      </div>
-
-      <Canvas3D width={width} height={height} draw={draw} style={{ width: '100%', maxWidth: 400, height: 'auto', aspectRatio: '4/3', borderRadius: 10, background: 'rgba(0,0,0,0.2)' }} />
-
-      <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-        {['parabola', 'ellipse', 'hyperbola'].map(t => (
-          <button key={t} onClick={() => setType(t)} style={{
-            background: type === t ? 'rgba(139,92,246,0.2)' : 'rgba(255,255,255,0.06)',
-            border: `1px solid ${type === t ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.1)'}`,
-            color: type === t ? '#8B5CF6' : 'rgba(255,255,255,0.5)',
-            borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
-            textTransform: 'capitalize', flex: 1
-          }}>{t}</button>
-        ))}
-      </div>
-
-      <div style={{ marginTop: 12 }}>
-        <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>
-          {type === 'parabola' ? 'Parameter a' : 'Semi-major axis a'}: {a}
-        </label>
-        <input type="range" min="20" max="100" value={a} onChange={e => setA(Number(e.target.value))}
-          style={{ width: '100%', accentColor: '#8B5CF6' }} />
-      </div>
-
-      <div style={{ marginTop: 12, padding: 10, background: 'rgba(139,92,246,0.05)', borderRadius: 8, border: '1px solid rgba(139,92,246,0.15)' }}>
-        <div style={{ color: '#8B5CF6', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>STANDARD FORMS</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' }}>
-          {type === 'parabola' && 'y² = 4ax | Focus: (a,0) | Directrix: x = -a'}
-          {type === 'ellipse' && 'x²/a² + y²/b² = 1 | e = √(1-b²/a²) | Foci: (±ae, 0)'}
-          {type === 'hyperbola' && 'x²/a² - y²/b² = 1 | e = √(1+b²/a²) | Asymptotes: y = ±(b/a)x'}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── WAVE INTERFERENCE (YDSE) ─────────────────────────────────────────────
-function WaveInterference() {
-  const [wavelength, setWavelength] = useState(40);
-  const [d, setD] = useState(80);
-  const [screenDist, setScreenDist] = useState(200);
-  const [showPathDiff, setShowPathDiff] = useState(false);
-
-  const width = 400, height = 300;
-  const slitY = 50;
-  const screenY = height - 40;
-  const cx = width / 2;
-
-  const draw = useCallback((ctx, w, h) => {
-    ctx.clearRect(0, 0, w, h);
-
-    // Screen
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-    ctx.fillRect(0, screenY, w, 40);
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(0, screenY); ctx.lineTo(w, screenY); ctx.stroke();
-
-    // Slits
-    const s1x = cx - d / 2;
-    const s2x = cx + d / 2;
-    ctx.fillStyle = '#FBBF24';
-    ctx.beginPath(); ctx.arc(s1x, slitY, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(s2x, slitY, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('S₁', s1x - 12, slitY - 8);
-    ctx.fillText('S₂', s2x + 6, slitY - 8);
-
-    // Wavefronts from S1
-    for (let r = 10; r < screenDist; r += wavelength) {
-      ctx.strokeStyle = `rgba(59,130,246,${0.3 - r / 600})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(s1x, slitY, r, 0, Math.PI * 2); ctx.stroke();
-    }
-    // Wavefronts from S2
-    for (let r = 10; r < screenDist; r += wavelength) {
-      ctx.strokeStyle = `rgba(16,185,129,${0.3 - r / 600})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(s2x, slitY, r, 0, Math.PI * 2); ctx.stroke();
-    }
-
-    // Interference pattern on screen
-    const patternWidth = 300;
-    const steps = 200;
-    for (let i = 0; i < steps; i++) {
-      const x = cx - patternWidth / 2 + (patternWidth * i) / steps;
-      const dist1 = Math.sqrt((x - s1x) ** 2 + (screenY - slitY) ** 2);
-      const dist2 = Math.sqrt((x - s2x) ** 2 + (screenY - slitY) ** 2);
-      const phaseDiff = ((dist2 - dist1) / wavelength) * 2 * Math.PI;
-      const intensity = Math.cos(phaseDiff / 2) ** 2;
-
-      const hue = 220 + intensity * 60;
-      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${intensity * 0.8})`;
-      ctx.fillRect(x, screenY, patternWidth / steps + 1, 35);
-    }
-
-    // Central bright fringe marker
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('Central Max', cx - 25, screenY + 30);
-
-    // Path difference visualization
-    if (showPathDiff) {
-      const targetX = cx + 60;
-      ctx.strokeStyle = 'rgba(251,191,36,0.5)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath(); ctx.moveTo(s1x, slitY); ctx.lineTo(targetX, screenY); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(s2x, slitY); ctx.lineTo(targetX, screenY); ctx.stroke();
-      ctx.setLineDash([]);
-
-      const dist1 = Math.sqrt((targetX - s1x) ** 2 + (screenY - slitY) ** 2);
-      const dist2 = Math.sqrt((targetX - s2x) ** 2 + (screenY - slitY) ** 2);
-      ctx.fillStyle = '#FBBF24';
-      ctx.fillText(`Δx = ${Math.abs(dist2 - dist1).toFixed(1)}`, targetX + 10, (slitY + screenY) / 2);
-    }
-
-    // Labels
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(`λ = ${wavelength}px`, 10, 20);
-    ctx.fillText(`d = ${d}px`, 10, 35);
-    ctx.fillText(`D = ${screenDist}px`, 10, 50);
-    ctx.fillText(`β = λD/d`, w - 80, 20);
-  }, [wavelength, d, screenDist, showPathDiff, cx, slitY, screenY]);
-
-  return (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <span style={{ fontSize: 20 }}>〰️</span>
-        <div>
-          <div style={{ color: '#fff', fontSize: 15, fontWeight: 600 }}>Wave Interference (YDSE)</div>
-          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>Double slit experiment with fringe pattern</div>
-        </div>
-      </div>
-
-      <Canvas3D width={width} height={height} draw={draw} style={{ width: '100%', maxWidth: 400, height: 'auto', aspectRatio: '4/3', borderRadius: 10, background: 'rgba(0,0,0,0.2)' }} />
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12, marginTop: 16 }}>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Wavelength λ: {wavelength}</label>
-          <input type="range" min="20" max="80" value={wavelength} onChange={e => setWavelength(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Slit separation d: {d}</label>
-          <input type="range" min="30" max="150" value={d} onChange={e => setD(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-        <div>
-          <label style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, display: 'block', marginBottom: 4 }}>Screen distance D: {screenDist}</label>
-          <input type="range" min="100" max="250" value={screenDist} onChange={e => setScreenDist(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#3B82F6' }} />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.5)', fontSize: 12, cursor: 'pointer' }}>
-          <input type="checkbox" checked={showPathDiff} onChange={e => setShowPathDiff(e.target.checked)} style={{ accentColor: '#FBBF24' }} />
-          Show Path Difference
-        </label>
-      </div>
-
-      <div style={{ marginTop: 12, padding: 10, background: 'rgba(59,130,246,0.05)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.15)' }}>
-        <div style={{ color: '#3B82F6', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>YDSE FORMULAS</div>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'monospace' }}>
-          β = λD/d (fringe width) &nbsp;&nbsp; Δx = nλ (bright) &nbsp;&nbsp; Δx = (2n-1)λ/2 (dark)
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── MAIN EXPORT ──────────────────────────────────────────────────────────
-export function Diagrams3DView() {
-  const [activeTab, setActiveTab] = useState('projectile');
-
-  const tabs = [
-    { id: 'projectile', label: '🎯 Projectile', component: ProjectileMotion },
-    { id: 'shm', label: '〰️ SHM', component: SHMDiagram },
-    { id: 'optics', label: '💎 Refraction', component: RefractionDiagram },
-    { id: 'conics', label: '📐 Conics', component: ConicSections },
-    { id: 'waves', label: '〰️ Interference', component: WaveInterference },
-  ];
-
-  const ActiveComponent = tabs.find(t => t.id === activeTab)?.component || ProjectileMotion;
-
-  return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ color: '#fff', fontFamily: "'Playfair Display', serif", fontSize: 24, marginBottom: 8 }}>
-          🔬 Interactive Diagrams
+    <div style={{ maxWidth: 860, margin: "0 auto", padding: "20px 12px 40px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: 18 }}>
+        <h2 style={{ color: "#fff", fontFamily: "'Playfair Display', serif", fontSize: 22, marginBottom: 4, fontWeight: 800 }}>
+          📊 Graphs & Curves
         </h2>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
-          Visualize physics and math concepts with interactive simulations
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+          Maths · Physics · Chemistry — all important graphs for JEE/CET
         </p>
       </div>
 
-      {/* Tabs */}
+      {/* Tab bar */}
       <div style={{
-        display: 'flex',
-        gap: 8,
-        marginBottom: 20,
-        overflowX: 'auto',
+        display: "flex",
+        gap: 6,
+        marginBottom: 18,
+        overflowX: "auto",
         paddingBottom: 4,
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        WebkitOverflowScrolling: "touch",
       }}>
-        {tabs.map(tab => (
+        {tabs.map(t => (
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            key={t.id}
+            onClick={() => setTab(t.id)}
             style={{
-              padding: '10px 16px',
-              borderRadius: 12,
-              border: `1px solid ${activeTab === tab.id ? 'rgba(129,140,248,0.4)' : 'rgba(255,255,255,0.1)'}`,
-              background: activeTab === tab.id ? 'rgba(129,140,248,0.15)' : 'rgba(255,255,255,0.03)',
-              color: activeTab === tab.id ? '#818CF8' : 'rgba(255,255,255,0.5)',
-              fontSize: 13,
-              fontWeight: activeTab === tab.id ? 600 : 400,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.2s',
+              padding: "8px 14px",
+              borderRadius: 10,
+              border: `1px solid ${tab === t.id ? "rgba(129,140,248,0.5)" : "rgba(255,255,255,0.09)"}`,
+              background: tab === t.id ? "rgba(129,140,248,0.15)" : "rgba(255,255,255,0.03)",
+              color: tab === t.id ? "#818CF8" : "rgba(255,255,255,0.45)",
+              fontSize: 12,
+              fontWeight: tab === t.id ? 700 : 400,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              whiteSpace: "nowrap",
               flexShrink: 0,
+              transition: "all 0.18s",
             }}
           >
-            {tab.label}
+            {t.icon} {t.label}
           </button>
         ))}
       </div>
 
-      <ActiveComponent />
-
-      {/* Tips */}
-      <div style={{
-        background: 'rgba(251,191,36,0.05)',
-        border: '1px solid rgba(251,191,36,0.15)',
-        borderRadius: 16,
-        padding: '16px 20px',
-        marginTop: 8,
-      }}>
-        <div style={{ color: '#FBBF24', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 8 }}>
-          💡 HOW TO USE
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-          {[
-            'Adjust sliders to change parameters',
-            'Click Launch/Animate to see motion',
-            'Use Reset to start over',
-            'Hover over canvas for coordinates',
-            'Toggle options to show/hide elements',
-            'Formulas update automatically',
-          ].map((tip, i) => (
-            <div key={i} style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.6 }}>
-              → {tip}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Content */}
+      {renderTab()}
     </div>
   );
 }
