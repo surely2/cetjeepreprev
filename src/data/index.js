@@ -1,5 +1,5 @@
 export { SUBJECTS } from './subjects.jsx';
-export { PHYSICS_DATA } from './physicsData.jsx';
+export { PHYSICS_DATA } from './physicsData.js';
 export { CHEMISTRY_DATA } from './chemistryData.js';
 export { MATHEMATICS_DATA } from './mathData.jsx';
 export { 
