@@ -466,21 +466,20 @@ export const MATHEMATICS_DATA = [
   },
 ];
 
-export mathematics: [
-    { symbol: "π", name: "Pi", value: "3.14159...", tex: "\\pi = 3.14159\\ldots" },
-    { symbol: "e", name: "Euler's number", value: "2.71828...", tex: "e = 2.71828\\ldots" },
-    { symbol: "√2", name: "Square root of 2", value: "1.41421...", tex: "\\sqrt{2} = 1.41421\\ldots" },
-    { symbol: "√3", name: "Square root of 3", value: "1.73205...", tex: "\\sqrt{3} = 1.73205\\ldots" },
-    { symbol: "ln 2", name: "Natural log of 2", value: "0.6931...", tex: "\\ln 2 = 0.6931\\ldots" },
-    { symbol: "log 2", name: "Log base 10 of 2", value: "0.3010", tex: "\\log_{10} 2 = 0.3010" },
-    { symbol: "log 3", name: "Log base 10 of 3", value: "0.4771", tex: "\\log_{10} 3 = 0.4771" },
-    { symbol: "1 radian", name: "Radian to degrees", value: "180°/π ≈ 57.3°", tex: "1 \\text{ rad} = \\frac{180^\\circ}{\\pi} \\approx 57.3^\\circ" },
-    { symbol: "sin 30°", name: "sin 30°", value: "1/2", tex: "\\sin 30^\\circ = \\frac{1}{2}" },
-    { symbol: "sin 45°", name: "sin 45°", value: "1/√2 ≈ 0.707", tex: "\\sin 45^\\circ = \\frac{1}{\\sqrt{2}}" },
-    { symbol: "sin 60°", name: "sin 60°", value: "√3/2 ≈ 0.866", tex: "\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}" },
-    { symbol: "tan 30°", name: "tan 30°", value: "1/√3 ≈ 0.577", tex: "\\tan 30^\\circ = \\frac{1}{\\sqrt{3}}" },
-    { symbol: "tan 60°", name: "tan 60°", value: "√3 ≈ 1.732", tex: "\\tan 60^\\circ = \\sqrt{3}" },
-  ],
-};
+export const mathematics = [
+  { symbol: "π", name: "Pi", value: "3.14159...", tex: "\\pi = 3.14159\\ldots" },
+  { symbol: "e", name: "Euler's number", value: "2.71828...", tex: "e = 2.71828\\ldots" },
+  { symbol: "√2", name: "Square root of 2", value: "1.41421...", tex: "\\sqrt{2} = 1.41421\\ldots" },
+  { symbol: "√3", name: "Square root of 3", value: "1.73205...", tex: "\\sqrt{3} = 1.73205\\ldots" },
+  { symbol: "ln 2", name: "Natural log of 2", value: "0.6931...", tex: "\\ln 2 = 0.6931\\ldots" },
+  { symbol: "log 2", name: "Log base 10 of 2", value: "0.3010", tex: "\\log_{10} 2 = 0.3010" },
+  { symbol: "log 3", name: "Log base 10 of 3", value: "0.4771", tex: "\\log_{10} 3 = 0.4771" },
+  { symbol: "1 radian", name: "Radian to degrees", value: "180°/π ≈ 57.3°", tex: "1 \\text{ rad} = \\frac{180^\\circ}{\\pi} \\approx 57.3^\\circ" },
+  { symbol: "sin 30°", name: "sin 30°", value: "1/2", tex: "\\sin 30^\\circ = \\frac{1}{2}" },
+  { symbol: "sin 45°", name: "sin 45°", value: "1/√2 ≈ 0.707", tex: "\\sin 45^\\circ = \\frac{1}{\\sqrt{2}}" },
+  { symbol: "sin 60°", name: "sin 60°", value: "√3/2 ≈ 0.866", tex: "\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}" },
+  { symbol: "tan 30°", name: "tan 30°", value: "1/√3 ≈ 0.577", tex: "\\tan 30^\\circ = \\frac{1}{\\sqrt{3}}" },
+  { symbol: "tan 60°", name: "tan 60°", value: "√3 ≈ 1.732", tex: "\\tan 60^\\circ = \\sqrt{3}" },
+];
 
 // ─── DERIVATIONS DATA ────────────────────────────────────────────────────────
