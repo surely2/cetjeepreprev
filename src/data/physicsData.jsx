@@ -1,4 +1,4 @@
-export const PHYSICS_DATA = [
+
 export const PHYSICS_DATA = [
   {
     id: "mechanics",
