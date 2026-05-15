@@ -612,6 +612,18 @@ const CHEMISTRY_DATA = [
     weightage: { jee: "2%", cet: "3%" },
     sections: [
       {
+        title: "Interactive Periodic Table",
+        formulas: [],
+        notes: [
+          "Click the button below to view the full interactive periodic table with all 118 elements.",
+          "Filter by element category: Alkali Metals, Halogens, Noble Gases, Transition Metals, etc.",
+          "Hover over any element to see its atomic number, symbol, and name.",
+          "Lanthanides (Row 8) and Actinides (Row 9) are shown separately below the main table.",
+        ],
+        mistakes: [],
+        tricks: ["Use the category filter to quickly find elements by group — great for JEE/CET questions!"],
+      },
+      {
         title: "Periodic Trends",
         formulas: [],
         notes: [
@@ -855,6 +867,35 @@ const MATHEMATICS_DATA = [
     tags: ["JEE", "CET"],
     weightage: { jee: "6%", cet: "8%" },
     sections: [
+      {
+        title: "Trigonometric Values Table",
+        formulas: [
+          { label: "sin 0°", tex: "\sin 0^\circ = 0", jee: true, cet: true, important: true },
+          { label: "sin 30°", tex: "\sin 30^\circ = \frac{1}{2}", jee: true, cet: true, important: true },
+          { label: "sin 45°", tex: "\sin 45^\circ = \frac{1}{\sqrt{2}}", jee: true, cet: true, important: true },
+          { label: "sin 60°", tex: "\sin 60^\circ = \frac{\sqrt{3}}{2}", jee: true, cet: true, important: true },
+          { label: "sin 90°", tex: "\sin 90^\circ = 1", jee: true, cet: true, important: true },
+          { label: "cos 0°", tex: "\cos 0^\circ = 1", jee: true, cet: true, important: true },
+          { label: "cos 30°", tex: "\cos 30^\circ = \frac{\sqrt{3}}{2}", jee: true, cet: true, important: true },
+          { label: "cos 45°", tex: "\cos 45^\circ = \frac{1}{\sqrt{2}}", jee: true, cet: true, important: true },
+          { label: "cos 60°", tex: "\cos 60^\circ = \frac{1}{2}", jee: true, cet: true, important: true },
+          { label: "cos 90°", tex: "\cos 90^\circ = 0", jee: true, cet: true, important: true },
+          { label: "tan 0°", tex: "\tan 0^\circ = 0", jee: true, cet: true, important: true },
+          { label: "tan 30°", tex: "\tan 30^\circ = \frac{1}{\sqrt{3}}", jee: true, cet: true, important: true },
+          { label: "tan 45°", tex: "\tan 45^\circ = 1", jee: true, cet: true, important: true },
+          { label: "tan 60°", tex: "\tan 60^\circ = \sqrt{3}", jee: true, cet: true, important: true },
+          { label: "tan 90°", tex: "\tan 90^\circ = \infty", jee: true, cet: true, important: true },
+        ],
+        notes: [
+          "Click the 📐 Trig button in the top bar for the full interactive trigonometric values table.",
+          "Memorize sin/cos/tan for 0°, 30°, 45°, 60°, 90° — these appear in almost every JEE/CET paper.",
+          "ASTC rule: All positive (Q1), Sin positive (Q2), Tan positive (Q3), Cos positive (Q4).",
+          "For angles > 90°, use reference angle and apply ASTC sign rules.",
+          "Complementary angles: sin(90°–θ) = cos θ, cos(90°–θ) = sin θ, tan(90°–θ) = cot θ.",
+        ],
+        mistakes: ["Confusing sin 30° (1/2) with sin 60° (√3/2)", "Forgetting sign changes in Q2/Q3/Q4"],
+        tricks: ["Remember: sin increases 0→1, cos decreases 1→0 from 0° to 90°", "tan = sin/cos — derive if you forget"],
+      },
       {
         title: "Fundamental Identities",
         formulas: [
@@ -1367,6 +1408,205 @@ const CONSTANTS_DATA = {
     { symbol: "tan 60°", name: "tan 60°", value: "√3 ≈ 1.732", tex: "\\tan 60^\\circ = \\sqrt{3}" },
   ],
 };
+
+
+// ─── PERIODIC TABLE DATA ────────────────────────────────────────────────────
+const PERIODIC_ELEMENTS = [
+  {n:1,s:"H",name:"Hydrogen",cat:"nonmetal",row:1,col:1},{n:2,s:"He",name:"Helium",cat:"noble-gas",row:1,col:18},
+  {n:3,s:"Li",name:"Lithium",cat:"alkali-metal",row:2,col:1},{n:4,s:"Be",name:"Beryllium",cat:"alkaline-earth",row:2,col:2},{n:5,s:"B",name:"Boron",cat:"metalloid",row:2,col:13},{n:6,s:"C",name:"Carbon",cat:"nonmetal",row:2,col:14},{n:7,s:"N",name:"Nitrogen",cat:"nonmetal",row:2,col:15},{n:8,s:"O",name:"Oxygen",cat:"nonmetal",row:2,col:16},{n:9,s:"F",name:"Fluorine",cat:"halogen",row:2,col:17},{n:10,s:"Ne",name:"Neon",cat:"noble-gas",row:2,col:18},
+  {n:11,s:"Na",name:"Sodium",cat:"alkali-metal",row:3,col:1},{n:12,s:"Mg",name:"Magnesium",cat:"alkaline-earth",row:3,col:2},{n:13,s:"Al",name:"Aluminium",cat:"post-transition",row:3,col:13},{n:14,s:"Si",name:"Silicon",cat:"metalloid",row:3,col:14},{n:15,s:"P",name:"Phosphorus",cat:"nonmetal",row:3,col:15},{n:16,s:"S",name:"Sulfur",cat:"nonmetal",row:3,col:16},{n:17,s:"Cl",name:"Chlorine",cat:"halogen",row:3,col:17},{n:18,s:"Ar",name:"Argon",cat:"noble-gas",row:3,col:18},
+  {n:19,s:"K",name:"Potassium",cat:"alkali-metal",row:4,col:1},{n:20,s:"Ca",name:"Calcium",cat:"alkaline-earth",row:4,col:2},{n:21,s:"Sc",name:"Scandium",cat:"transition-metal",row:4,col:3},{n:22,s:"Ti",name:"Titanium",cat:"transition-metal",row:4,col:4},{n:23,s:"V",name:"Vanadium",cat:"transition-metal",row:4,col:5},{n:24,s:"Cr",name:"Chromium",cat:"transition-metal",row:4,col:6},{n:25,s:"Mn",name:"Manganese",cat:"transition-metal",row:4,col:7},{n:26,s:"Fe",name:"Iron",cat:"transition-metal",row:4,col:8},{n:27,s:"Co",name:"Cobalt",cat:"transition-metal",row:4,col:9},{n:28,s:"Ni",name:"Nickel",cat:"transition-metal",row:4,col:10},{n:29,s:"Cu",name:"Copper",cat:"transition-metal",row:4,col:11},{n:30,s:"Zn",name:"Zinc",cat:"transition-metal",row:4,col:12},{n:31,s:"Ga",name:"Gallium",cat:"post-transition",row:4,col:13},{n:32,s:"Ge",name:"Germanium",cat:"metalloid",row:4,col:14},{n:33,s:"As",name:"Arsenic",cat:"metalloid",row:4,col:15},{n:34,s:"Se",name:"Selenium",cat:"nonmetal",row:4,col:16},{n:35,s:"Br",name:"Bromine",cat:"halogen",row:4,col:17},{n:36,s:"Kr",name:"Krypton",cat:"noble-gas",row:4,col:18},
+  {n:37,s:"Rb",name:"Rubidium",cat:"alkali-metal",row:5,col:1},{n:38,s:"Sr",name:"Strontium",cat:"alkaline-earth",row:5,col:2},{n:39,s:"Y",name:"Yttrium",cat:"transition-metal",row:5,col:3},{n:40,s:"Zr",name:"Zirconium",cat:"transition-metal",row:5,col:4},{n:41,s:"Nb",name:"Niobium",cat:"transition-metal",row:5,col:5},{n:42,s:"Mo",name:"Molybdenum",cat:"transition-metal",row:5,col:6},{n:43,s:"Tc",name:"Technetium",cat:"transition-metal",row:5,col:7},{n:44,s:"Ru",name:"Ruthenium",cat:"transition-metal",row:5,col:8},{n:45,s:"Rh",name:"Rhodium",cat:"transition-metal",row:5,col:9},{n:46,s:"Pd",name:"Palladium",cat:"transition-metal",row:5,col:10},{n:47,s:"Ag",name:"Silver",cat:"transition-metal",row:5,col:11},{n:48,s:"Cd",name:"Cadmium",cat:"transition-metal",row:5,col:12},{n:49,s:"In",name:"Indium",cat:"post-transition",row:5,col:13},{n:50,s:"Sn",name:"Tin",cat:"post-transition",row:5,col:14},{n:51,s:"Sb",name:"Antimony",cat:"metalloid",row:5,col:15},{n:52,s:"Te",name:"Tellurium",cat:"metalloid",row:5,col:16},{n:53,s:"I",name:"Iodine",cat:"halogen",row:5,col:17},{n:54,s:"Xe",name:"Xenon",cat:"noble-gas",row:5,col:18},
+  {n:55,s:"Cs",name:"Cesium",cat:"alkali-metal",row:6,col:1},{n:56,s:"Ba",name:"Barium",cat:"alkaline-earth",row:6,col:2},{n:57,s:"La",name:"Lanthanum",cat:"lanthanide",row:6,col:3},{n:72,s:"Hf",name:"Hafnium",cat:"transition-metal",row:6,col:4},{n:73,s:"Ta",name:"Tantalum",cat:"transition-metal",row:6,col:5},{n:74,s:"W",name:"Tungsten",cat:"transition-metal",row:6,col:6},{n:75,s:"Re",name:"Rhenium",cat:"transition-metal",row:6,col:7},{n:76,s:"Os",name:"Osmium",cat:"transition-metal",row:6,col:8},{n:77,s:"Ir",name:"Iridium",cat:"transition-metal",row:6,col:9},{n:78,s:"Pt",name:"Platinum",cat:"transition-metal",row:6,col:10},{n:79,s:"Au",name:"Gold",cat:"transition-metal",row:6,col:11},{n:80,s:"Hg",name:"Mercury",cat:"transition-metal",row:6,col:12},{n:81,s:"Tl",name:"Thallium",cat:"post-transition",row:6,col:13},{n:82,s:"Pb",name:"Lead",cat:"post-transition",row:6,col:14},{n:83,s:"Bi",name:"Bismuth",cat:"post-transition",row:6,col:15},{n:84,s:"Po",name:"Polonium",cat:"metalloid",row:6,col:16},{n:85,s:"At",name:"Astatine",cat:"halogen",row:6,col:17},{n:86,s:"Rn",name:"Radon",cat:"noble-gas",row:6,col:18},
+  {n:87,s:"Fr",name:"Francium",cat:"alkali-metal",row:7,col:1},{n:88,s:"Ra",name:"Radium",cat:"alkaline-earth",row:7,col:2},{n:89,s:"Ac",name:"Actinium",cat:"actinide",row:7,col:3},{n:104,s:"Rf",name:"Rutherfordium",cat:"transition-metal",row:7,col:4},{n:105,s:"Db",name:"Dubnium",cat:"transition-metal",row:7,col:5},{n:106,s:"Sg",name:"Seaborgium",cat:"transition-metal",row:7,col:6},{n:107,s:"Bh",name:"Bohrium",cat:"transition-metal",row:7,col:7},{n:108,s:"Hs",name:"Hassium",cat:"transition-metal",row:7,col:8},{n:109,s:"Mt",name:"Meitnerium",cat:"transition-metal",row:7,col:9},{n:110,s:"Ds",name:"Darmstadtium",cat:"transition-metal",row:7,col:10},{n:111,s:"Rg",name:"Roentgenium",cat:"transition-metal",row:7,col:11},{n:112,s:"Cn",name:"Copernicium",cat:"transition-metal",row:7,col:12},{n:113,s:"Nh",name:"Nihonium",cat:"post-transition",row:7,col:13},{n:114,s:"Fl",name:"Flerovium",cat:"post-transition",row:7,col:14},{n:115,s:"Mc",name:"Moscovium",cat:"post-transition",row:7,col:15},{n:116,s:"Lv",name:"Livermorium",cat:"post-transition",row:7,col:16},{n:117,s:"Ts",name:"Tennessine",cat:"halogen",row:7,col:17},{n:118,s:"Og",name:"Oganesson",cat:"noble-gas",row:7,col:18},
+  {n:58,s:"Ce",name:"Cerium",cat:"lanthanide",row:8,col:4},{n:59,s:"Pr",name:"Praseodymium",cat:"lanthanide",row:8,col:5},{n:60,s:"Nd",name:"Neodymium",cat:"lanthanide",row:8,col:6},{n:61,s:"Pm",name:"Promethium",cat:"lanthanide",row:8,col:7},{n:62,s:"Sm",name:"Samarium",cat:"lanthanide",row:8,col:8},{n:63,s:"Eu",name:"Europium",cat:"lanthanide",row:8,col:9},{n:64,s:"Gd",name:"Gadolinium",cat:"lanthanide",row:8,col:10},{n:65,s:"Tb",name:"Terbium",cat:"lanthanide",row:8,col:11},{n:66,s:"Dy",name:"Dysprosium",cat:"lanthanide",row:8,col:12},{n:67,s:"Ho",name:"Holmium",cat:"lanthanide",row:8,col:13},{n:68,s:"Er",name:"Erbium",cat:"lanthanide",row:8,col:14},{n:69,s:"Tm",name:"Thulium",cat:"lanthanide",row:8,col:15},{n:70,s:"Yb",name:"Ytterbium",cat:"lanthanide",row:8,col:16},{n:71,s:"Lu",name:"Lutetium",cat:"lanthanide",row:8,col:17},
+  {n:90,s:"Th",name:"Thorium",cat:"actinide",row:9,col:4},{n:91,s:"Pa",name:"Protactinium",cat:"actinide",row:9,col:5},{n:92,s:"U",name:"Uranium",cat:"actinide",row:9,col:6},{n:93,s:"Np",name:"Neptunium",cat:"actinide",row:9,col:7},{n:94,s:"Pu",name:"Plutonium",cat:"actinide",row:9,col:8},{n:95,s:"Am",name:"Americium",cat:"actinide",row:9,col:9},{n:96,s:"Cm",name:"Curium",cat:"actinide",row:9,col:10},{n:97,s:"Bk",name:"Berkelium",cat:"actinide",row:9,col:11},{n:98,s:"Cf",name:"Californium",cat:"actinide",row:9,col:12},{n:99,s:"Es",name:"Einsteinium",cat:"actinide",row:9,col:13},{n:100,s:"Fm",name:"Fermium",cat:"actinide",row:9,col:14},{n:101,s:"Md",name:"Mendelevium",cat:"actinide",row:9,col:15},{n:102,s:"No",name:"Nobelium",cat:"actinide",row:9,col:16},{n:103,s:"Lr",name:"Lawrencium",cat:"actinide",row:9,col:17},
+];
+
+const CAT_COLORS = {
+  "alkali-metal": { bg: "rgba(239,68,68,0.18)", border: "rgba(239,68,68,0.5)", text: "#FCA5A5" },
+  "alkaline-earth": { bg: "rgba(249,115,22,0.18)", border: "rgba(249,115,22,0.5)", text: "#FDBA74" },
+  "transition-metal": { bg: "rgba(234,179,8,0.18)", border: "rgba(234,179,8,0.5)", text: "#FDE047" },
+  "post-transition": { bg: "rgba(34,197,94,0.18)", border: "rgba(34,197,94,0.5)", text: "#86EFAC" },
+  "metalloid": { bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.5)", text: "#6EE7B7" },
+  "nonmetal": { bg: "rgba(59,130,246,0.18)", border: "rgba(59,130,246,0.5)", text: "#93C5FD" },
+  "halogen": { bg: "rgba(139,92,246,0.18)", border: "rgba(139,92,246,0.5)", text: "#C4B5FD" },
+  "noble-gas": { bg: "rgba(236,72,153,0.18)", border: "rgba(236,72,153,0.5)", text: "#F9A8D4" },
+  "lanthanide": { bg: "rgba(14,165,233,0.18)", border: "rgba(14,165,233,0.5)", text: "#7DD3FC" },
+  "actinide": { bg: "rgba(244,63,94,0.18)", border: "rgba(244,63,94,0.5)", text: "#FDA4AF" },
+};
+
+function PeriodicTableView() {
+  const [hovered, setHovered] = useState(null);
+  const [filter, setFilter] = useState("all");
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  const categories = [
+    { key: "alkali-metal", label: "Alkali Metals" },
+    { key: "alkaline-earth", label: "Alkaline Earth" },
+    { key: "transition-metal", label: "Transition Metals" },
+    { key: "post-transition", label: "Post-Transition" },
+    { key: "metalloid", label: "Metalloids" },
+    { key: "nonmetal", label: "Nonmetals" },
+    { key: "halogen", label: "Halogens" },
+    { key: "noble-gas", label: "Noble Gases" },
+    { key: "lanthanide", label: "Lanthanides" },
+    { key: "actinide", label: "Actinides" },
+  ];
+
+  const visibleElements = filter === "all" ? PERIODIC_ELEMENTS : PERIODIC_ELEMENTS.filter(e => e.cat === filter);
+
+  return (
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
+        <h2 style={{ color: "#fff", fontFamily: "'Playfair Display', serif", fontSize: 24, margin: 0 }}>🧪 Periodic Table</h2>
+        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+          <button onClick={() => setFilter("all")} style={{
+            padding: "4px 10px", borderRadius: 8, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            background: filter === "all" ? "rgba(255,255,255,0.12)" : "transparent",
+            border: `1px solid ${filter === "all" ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)"}`,
+            color: filter === "all" ? "#fff" : "rgba(255,255,255,0.4)",
+          }}>All</button>
+          {categories.map(c => {
+            const col = CAT_COLORS[c.key];
+            return (
+              <button key={c.key} onClick={() => setFilter(filter === c.key ? "all" : c.key)} style={{
+                padding: "4px 10px", borderRadius: 8, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                background: filter === c.key ? col.bg : "transparent",
+                border: `1px solid ${filter === c.key ? col.border : "rgba(255,255,255,0.1)"}`,
+                color: filter === c.key ? col.text : "rgba(255,255,255,0.4)",
+              }}>{c.label}</button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        {categories.map(c => (
+          <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 3, background: CAT_COLORS[c.key].bg, border: `1px solid ${CAT_COLORS[c.key].border}` }} />
+            <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 9 }}>{c.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Main Table */}
+      <div className="periodic-table-grid" style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "repeat(18, 1fr)" : "repeat(18, 1fr)",
+        gridTemplateRows: "repeat(7, 1fr)",
+        gap: isMobile ? "1px" : "3px",
+        marginBottom: 16,
+        overflowX: "auto",
+      }}>
+        {PERIODIC_ELEMENTS.filter(e => e.row <= 7).map(el => {
+          const col = CAT_COLORS[el.cat] || CAT_COLORS["nonmetal"];
+          const isVisible = filter === "all" || el.cat === filter;
+          const isHovered = hovered === el.n;
+          return (
+            <div
+              key={el.n}
+              onMouseEnter={() => setHovered(el.n)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                gridColumn: el.col,
+                gridRow: el.row,
+                background: isVisible ? col.bg : "rgba(255,255,255,0.02)",
+                border: `1px solid ${isHovered && isVisible ? col.border : isVisible ? col.border.replace('0.5', '0.2') : 'rgba(255,255,255,0.04)'}`,
+                borderRadius: isMobile ? 2 : 6,
+                padding: isMobile ? "2px 1px" : "6px 4px",
+                textAlign: "center",
+                cursor: "pointer",
+                transition: "all 0.15s",
+                transform: isHovered && isVisible ? "scale(1.08)" : "scale(1)",
+                zIndex: isHovered ? 10 : 1,
+                opacity: isVisible ? 1 : 0.15,
+                minWidth: isMobile ? 0 : 48,
+              }}
+            >
+              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: isMobile ? 6 : 9, marginBottom: 1 }}>{el.n}</div>
+              <div style={{ color: isVisible ? col.text : "rgba(255,255,255,0.15)", fontSize: isMobile ? 8 : 13, fontWeight: 700, lineHeight: 1.1 }}>{el.s}</div>
+              {!isMobile && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 7, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{el.name}</div>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Lanthanides & Actinides */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, marginBottom: 6, letterSpacing: "0.1em" }}>LANTHANIDES (Row 8)</div>
+        <div className="periodic-table-grid" style={{
+          display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: isMobile ? "1px" : "3px", overflowX: "auto",
+        }}>
+          {PERIODIC_ELEMENTS.filter(e => e.row === 8).map(el => {
+            const col = CAT_COLORS[el.cat];
+            const isVisible = filter === "all" || el.cat === filter;
+            return (
+              <div key={el.n} style={{
+                background: isVisible ? col.bg : "rgba(255,255,255,0.02)",
+                border: `1px solid ${isVisible ? col.border.replace('0.5', '0.2') : 'rgba(255,255,255,0.04)'}`,
+                borderRadius: isMobile ? 2 : 6, padding: isMobile ? "2px 1px" : "6px 4px",
+                textAlign: "center", opacity: isVisible ? 1 : 0.15, minWidth: isMobile ? 0 : 48,
+              }}>
+                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: isMobile ? 6 : 9 }}>{el.n}</div>
+                <div style={{ color: isVisible ? col.text : "rgba(255,255,255,0.15)", fontSize: isMobile ? 8 : 13, fontWeight: 700 }}>{el.s}</div>
+                {!isMobile && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 7, marginTop: 2 }}>{el.name}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, marginBottom: 6, letterSpacing: "0.1em" }}>ACTINIDES (Row 9)</div>
+        <div className="periodic-table-grid" style={{
+          display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: isMobile ? "1px" : "3px", overflowX: "auto",
+        }}>
+          {PERIODIC_ELEMENTS.filter(e => e.row === 9).map(el => {
+            const col = CAT_COLORS[el.cat];
+            const isVisible = filter === "all" || el.cat === filter;
+            return (
+              <div key={el.n} style={{
+                background: isVisible ? col.bg : "rgba(255,255,255,0.02)",
+                border: `1px solid ${isVisible ? col.border.replace('0.5', '0.2') : 'rgba(255,255,255,0.04)'}`,
+                borderRadius: isMobile ? 2 : 6, padding: isMobile ? "2px 1px" : "6px 4px",
+                textAlign: "center", opacity: isVisible ? 1 : 0.15, minWidth: isMobile ? 0 : 48,
+              }}>
+                <div style={{ color: "rgba(255,255,255,0.35)", fontSize: isMobile ? 6 : 9 }}>{el.n}</div>
+                <div style={{ color: isVisible ? col.text : "rgba(255,255,255,0.15)", fontSize: isMobile ? 8 : 13, fontWeight: 700 }}>{el.s}</div>
+                {!isMobile && <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 7, marginTop: 2 }}>{el.name}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Element Detail */}
+      {hovered && (() => {
+        const el = PERIODIC_ELEMENTS.find(e => e.n === hovered);
+        if (!el) return null;
+        const col = CAT_COLORS[el.cat];
+        return (
+          <div style={{
+            background: "rgba(255,255,255,0.04)", border: `1px solid ${col.border}`, borderRadius: 16,
+            padding: "16px 20px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 12, background: col.bg, border: `2px solid ${col.border}`,
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800,
+              color: col.text, flexShrink: 0,
+            }}>{el.s}</div>
+            <div>
+              <div style={{ color: "#fff", fontSize: 16, fontWeight: 700 }}>{el.name}</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginTop: 2 }}>Atomic Number: {el.n} · {categories.find(c => c.key === el.cat)?.label}</div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
 
 // ─── DERIVATIONS DATA ────────────────────────────────────────────────────────
 const DERIVATIONS_DATA = [
@@ -2604,6 +2844,152 @@ function RevisionView({ bookmarks, toggleBookmark, srData, setSrData }) {
   );
 }
 
+// ─── TRIGONOMETRY TABLE VIEW ────────────────────────────────────────────────
+const TRIG_VALUES = [
+  { angle: "0°", rad: "0", sin: "0", cos: "1", tan: "0", cot: "∞", sec: "1", cosec: "∞" },
+  { angle: "30°", rad: "π/6", sin: "1/2", cos: "√3/2", tan: "1/√3", cot: "√3", sec: "2/√3", cosec: "2" },
+  { angle: "45°", rad: "π/4", sin: "1/√2", cos: "1/√2", tan: "1", cot: "1", sec: "√2", cosec: "√2" },
+  { angle: "60°", rad: "π/3", sin: "√3/2", cos: "1/2", tan: "√3", cot: "1/√3", sec: "2", cosec: "2/√3" },
+  { angle: "90°", rad: "π/2", sin: "1", cos: "0", tan: "∞", cot: "0", sec: "∞", cosec: "1" },
+  { angle: "120°", rad: "2π/3", sin: "√3/2", cos: "-1/2", tan: "-√3", cot: "-1/√3", sec: "-2", cosec: "2/√3" },
+  { angle: "135°", rad: "3π/4", sin: "1/√2", cos: "-1/√2", tan: "-1", cot: "-1", sec: "-√2", cosec: "√2" },
+  { angle: "150°", rad: "5π/6", sin: "1/2", cos: "-√3/2", tan: "-1/√3", cot: "-√3", sec: "-2/√3", cosec: "2" },
+  { angle: "180°", rad: "π", sin: "0", cos: "-1", tan: "0", cot: "∞", sec: "-1", cosec: "∞" },
+  { angle: "270°", rad: "3π/2", sin: "-1", cos: "0", tan: "∞", cot: "0", sec: "∞", cosec: "-1" },
+  { angle: "360°", rad: "2π", sin: "0", cos: "1", tan: "0", cot: "∞", sec: "1", cosec: "∞" },
+];
+
+function TrigTableView() {
+  const [highlight, setHighlight] = useState(null);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  const cols = [
+    { key: "angle", label: "Angle", color: "#818CF8" },
+    { key: "rad", label: "Radians", color: "#818CF8" },
+    { key: "sin", label: "sin θ", color: "#F472B6" },
+    { key: "cos", label: "cos θ", color: "#34D399" },
+    { key: "tan", label: "tan θ", color: "#FBBF24" },
+    { key: "cot", label: "cot θ", color: "#FB923C" },
+    { key: "sec", label: "sec θ", color: "#60A5FA" },
+    { key: "cosec", label: "cosec θ", color: "#A78BFA" },
+  ];
+
+  return (
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
+        <h2 style={{ color: "#fff", fontFamily: "'Playfair Display', serif", fontSize: 24, margin: 0 }}>📐 Trigonometric Values Table</h2>
+        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+          {cols.slice(2).map(c => (
+            <button key={c.key} onClick={() => setHighlight(highlight === c.key ? null : c.key)} style={{
+              padding: "4px 10px", borderRadius: 8, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+              background: highlight === c.key ? `${c.color}20` : "transparent",
+              border: `1px solid ${highlight === c.key ? c.color + "60" : "rgba(255,255,255,0.1)"}`,
+              color: highlight === c.key ? c.color : "rgba(255,255,255,0.4)",
+            }}>{c.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ overflowX: "auto", marginBottom: 20 }}>
+        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 4px", fontSize: isMobile ? 11 : 13 }}>
+          <thead>
+            <tr>
+              {cols.map(c => (
+                <th key={c.key} style={{
+                  padding: isMobile ? "8px 4px" : "12px 8px",
+                  color: c.color,
+                  fontSize: isMobile ? 9 : 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  textAlign: "center",
+                  borderBottom: `1px solid ${c.color}30`,
+                  whiteSpace: "nowrap",
+                }}>{c.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {TRIG_VALUES.map((row, i) => (
+              <tr key={i} style={{ transition: "all 0.2s" }}>
+                {cols.map(c => {
+                  const isHighlighted = highlight === c.key;
+                  return (
+                    <td key={c.key} style={{
+                      padding: isMobile ? "8px 4px" : "12px 8px",
+                      textAlign: "center",
+                      background: isHighlighted ? `${c.color}12` : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${isHighlighted ? c.color + "30" : "rgba(255,255,255,0.06)"}`,
+                      borderRadius: c.key === "angle" ? "8px 0 0 8px" : c.key === "cosec" ? "0 8px 8px 0" : 0,
+                      color: isHighlighted ? c.color : "rgba(255,255,255,0.8)",
+                      fontWeight: isHighlighted ? 700 : 400,
+                      fontSize: isMobile ? 10 : 13,
+                      whiteSpace: "nowrap",
+                    }}>
+                      {row[c.key]}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ASTC Quadrant Summary */}
+      <div style={{
+        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 16, padding: "20px 24px", marginBottom: 16,
+      }}>
+        <div style={{ color: "#FBBF24", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 14 }}>📐 ASTC RULE — SIGNS BY QUADRANT</div>
+        <div className="astc-grid" style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+          {[
+            { q: "Q1 (0°–90°)", sign: "All +ve", funcs: "sin, cos, tan, cot, sec, cosec", color: "#34D399" },
+            { q: "Q2 (90°–180°)", sign: "sin +ve", funcs: "sin, cosec", color: "#F472B6" },
+            { q: "Q3 (180°–270°)", sign: "tan +ve", funcs: "tan, cot", color: "#FBBF24" },
+            { q: "Q4 (270°–360°)", sign: "cos +ve", funcs: "cos, sec", color: "#60A5FA" },
+          ].map(q => (
+            <div key={q.q} style={{
+              background: "rgba(255,255,255,0.04)", border: `1px solid ${q.color}25`,
+              borderRadius: 10, padding: "12px 14px",
+            }}>
+              <div style={{ color: q.color, fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{q.q}</div>
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11 }}>{q.sign}</div>
+              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, marginTop: 2 }}>{q.funcs}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Complementary & Supplementary */}
+      <div style={{
+        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 16, padding: "20px 24px",
+      }}>
+        <div style={{ color: "#818CF8", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", marginBottom: 14 }}>🔗 COMPLEMENTARY & SUPPLEMENTARY IDENTITIES</div>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+          {[
+            { label: "Complementary (90°–θ)", formulas: ["sin(90°–θ) = cos θ", "cos(90°–θ) = sin θ", "tan(90°–θ) = cot θ", "cot(90°–θ) = tan θ", "sec(90°–θ) = cosec θ", "cosec(90°–θ) = sec θ"] },
+            { label: "Supplementary (180°–θ)", formulas: ["sin(180°–θ) = sin θ", "cos(180°–θ) = –cos θ", "tan(180°–θ) = –tan θ", "sin(180°+θ) = –sin θ", "cos(180°+θ) = –cos θ", "tan(180°+θ) = tan θ"] },
+            { label: "Negative Angles", formulas: ["sin(–θ) = –sin θ", "cos(–θ) = cos θ", "tan(–θ) = –tan θ", "cosec(–θ) = –cosec θ", "sec(–θ) = sec θ", "cot(–θ) = –cot θ"] },
+            { label: "Periodicity", formulas: ["sin(360°–θ) = –sin θ", "cos(360°–θ) = cos θ", "sin(360°+θ) = sin θ", "cos(360°+θ) = cos θ", "tan(360°+θ) = tan θ", "tan(180°+θ) = tan θ"] },
+          ].map(g => (
+            <div key={g.label} style={{
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: 10, padding: "12px 14px",
+            }}>
+              <div style={{ color: "#fff", fontSize: 11, fontWeight: 700, marginBottom: 8 }}>{g.label}</div>
+              {g.formulas.map((f, i) => (
+                <div key={i} style={{ color: "rgba(255,255,255,0.55)", fontSize: 11, marginBottom: 3, fontFamily: "monospace" }}>{f}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── DERIVATIONS VIEW ────────────────────────────────────────────────────────
 function DerivationsView() {
   const [active, setActive] = useState(null);
@@ -3076,6 +3462,8 @@ function MainNavDrawer({ open, onClose, view, setView, subject, bookmarks }) {
     { id: "fotd", label: "🌟 Formula of the Day" },
     { id: "quiz", label: "🧠 Quiz" },
     { id: "revision", label: "🔄 Revision" },
+    { id: "periodic", label: "🧪 Periodic Table" },
+    { id: "trig", label: "📐 Trig Table" },
     { id: "bookmarks", label: `★ Bookmarks (${bookmarks.size})` },
     { id: "progress", label: "📊 Progress" },
     { id: "derivations", label: "📐 Derivations" },
@@ -3255,6 +3643,8 @@ export default function App() {
         .main-content-inner { padding: 16px 12px !important; }
         .stats-row { gap: 10px !important; }
         .stats-row > div { padding: 10px 14px !important; min-width: 70px !important; }
+        .periodic-table-grid { gap: 1px !important; }
+        .astc-grid { grid-template-columns: 1fr !important; }
       }
 
       @media (min-width: 768px) {
@@ -3292,6 +3682,8 @@ export default function App() {
     { id: "fotd", label: "🌟 Today" },
     { id: "quiz", label: "🧠 Quiz" },
     { id: "revision", label: "🔄 Revision" },
+    { id: "periodic", label: "🧪 Periodic" },
+    { id: "trig", label: "📐 Trig" },
     { id: "derivations", label: "📐 Derivations" },
     { id: "diagrams", label: "🔬 Diagrams" },
     { id: "units", label: "📏 Units" },
@@ -3428,6 +3820,8 @@ export default function App() {
               {view === "revision" && <RevisionView bookmarks={bookmarks} toggleBookmark={toggleBookmark} srData={srData} setSrData={setSrData} />}
               {view === "fotd" && <FormulaOfTheDayView bookmarks={bookmarks} toggleBookmark={toggleBookmark} />}
               {view === "derivations" && <DerivationsView />}
+              {view === "periodic" && <PeriodicTableView />}
+              {view === "trig" && <TrigTableView />}
               {view === "diagrams" && <Diagrams3DView />}
               {view === "units" && <UnitCheckerView />}
               {view === "constants" && <ConstantsView />}
