@@ -1,0 +1,348 @@
+// chemistryData.jsx — Chemistry formula data for JEE/CET Handbook
+// Extracted from the main App.jsx for modularity
+
+const CHEMISTRY_DATA = [
+  {
+    id: "mole",
+    title: "Mole Concept",
+    tags: ["JEE", "CET", "NCERT"],
+    weightage: { jee: "5%", cet: "6%" },
+    sections: [
+      {
+        title: "Fundamental Relations",
+        formulas: [
+          { label: "Number of moles", tex: "n = \\frac{m}{M} = \\frac{N}{N_A}", jee: true, cet: true, important: true },
+          { label: "Avogadro's number", tex: "N_A = 6.022 \\times 10^{23}", jee: true, cet: true },
+          { label: "Molar volume (STP)", tex: "V_m = 22.4 \\text{ L/mol}", jee: true, cet: true },
+          { label: "Molarity", tex: "M = \\frac{\\text{moles of solute}}{\\text{volume of solution (L)}}", jee: true, cet: true, important: true },
+          { label: "Molality", tex: "m = \\frac{\\text{moles of solute}}{\\text{mass of solvent (kg)}}", jee: true, cet: true },
+          { label: "Mole fraction", tex: "\\chi_A = \\frac{n_A}{n_A + n_B}", jee: true, cet: true },
+          { label: "Normality", tex: "N = M \\times n_{factor}", jee: true, cet: true },
+          { label: "% w/v", tex: "\\%\\frac{w}{v} = \\frac{\\text{mass of solute (g)}}{\\text{vol. of solution (mL)}} \\times 100", jee: false, cet: true },
+        ],
+        notes: [
+          "STP (IUPAC 2010): 0°C, 1 bar → 22.7 L/mol",
+          "Old STP: 0°C, 1 atm → 22.4 L/mol (commonly used in problems)",
+          "n-factor for acids = basicity; for bases = acidity; for redox = change in oxidation state",
+        ],
+        mistakes: ["Using mL instead of L for molarity", "Confusing molarity with molality"],
+        tricks: ["Moles = given grams / molar mass — always first step"],
+      },
+      {
+        title: "Limiting Reagent & Yield",
+        formulas: [
+          { label: "% yield", tex: "\\% \\text{ yield} = \\frac{\\text{actual yield}}{\\text{theoretical yield}} \\times 100", jee: true, cet: true },
+          { label: "% purity", tex: "\\% \\text{ purity} = \\frac{\\text{pure substance}}{\\text{total mass}} \\times 100", jee: false, cet: true },
+        ],
+        notes: [
+          "Limiting reagent: gives least moles of product",
+          "Excess reagent: left over after reaction",
+        ],
+        mistakes: ["Forgetting to find limiting reagent before calculating product"],
+        tricks: ["Divide moles of each reactant by stoichiometric coefficient → smallest value = limiting reagent"],
+      },
+    ],
+  },
+  {
+    id: "atomic",
+    title: "Atomic Structure",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "4%", cet: "5%" },
+    sections: [
+      {
+        title: "Bohr Model & Hydrogen Atom",
+        formulas: [
+          { label: "Energy of nth orbit", tex: "E_n = -\\frac{13.6}{n^2} \\text{ eV}", jee: true, cet: true, important: true },
+          { label: "Radius of nth orbit", tex: "r_n = 0.529 \\times n^2 \\text{ Å (H atom)}", jee: true, cet: true },
+          { label: "Velocity in nth orbit", tex: "v_n = \\frac{2.18 \\times 10^6}{n} \\text{ m/s}", jee: true, cet: false },
+          { label: "Wave number (Rydberg)", tex: "\\bar{\\nu} = R_H\\left(\\frac{1}{n_1^2} - \\frac{1}{n_2^2}\\right)", jee: true, cet: true, important: true },
+          { label: "Rydberg constant", tex: "R_H = 1.097 \\times 10^7 \\text{ m}^{-1}", jee: true, cet: false },
+          { label: "de Broglie wavelength", tex: "\\lambda = \\frac{h}{mv} = \\frac{h}{p}", jee: true, cet: true, important: true },
+          { label: "Heisenberg uncertainty", tex: "\\Delta x \\cdot \\Delta p \\geq \\frac{h}{4\\pi}", jee: true, cet: true },
+          { label: "Photoelectric effect", tex: "E = h\\nu = \\phi + KE_{max}", jee: true, cet: true, important: true },
+        ],
+        notes: [
+          "Series: Lyman (UV, n₁=1), Balmer (visible, n₁=2), Paschen (IR, n₁=3), Brackett (n₁=4), Pfund (n₁=5)",
+          "h = 6.626 × 10⁻³⁴ J·s (Planck's constant)",
+          "Stopping potential: eV₀ = KE_max",
+          "Threshold frequency: ν₀ = φ/h",
+        ],
+        mistakes: ["Negative sign in energy: E₁ = −13.6 eV, not positive", "Confusing wave number and wavelength"],
+        tricks: ["Energy difference → photon energy → wavelength λ = hc/E"],
+      },
+      {
+        title: "Quantum Numbers & Electronic Config",
+        formulas: [
+          { label: "Max electrons in shell", tex: "= 2n^2", jee: true, cet: true },
+          { label: "Max electrons in subshell", tex: "= 2(2l+1)", jee: true, cet: true },
+          { label: "Number of orbitals in subshell", tex: "= 2l+1", jee: true, cet: true },
+        ],
+        notes: [
+          "n: principal (1,2,3...), l: azimuthal (0 to n−1), m: magnetic (−l to +l), s: spin (±½)",
+          "l = 0(s), 1(p), 2(d), 3(f)",
+          "Aufbau: fill lowest energy first; 1s 2s 2p 3s 3p 4s 3d 4p...",
+          "Hund's rule: maximize unpaired electrons in degenerate orbitals",
+          "Pauli exclusion: no two electrons have same 4 quantum numbers",
+          "Exception: Cr = [Ar]3d⁵4s¹; Cu = [Ar]3d¹⁰4s¹ (half-filled/fully-filled stability)",
+        ],
+        mistakes: ["Writing Cr as [Ar]3d⁴4s² (incorrect)", "Forgetting exceptions for Cr, Cu, Mo, Ag"],
+        tricks: ["(n+l) rule: lower (n+l) fills first; same (n+l) → lower n fills first"],
+      },
+    ],
+  },
+  {
+    id: "periodic",
+    title: "Periodic Table",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "2%", cet: "3%" },
+    sections: [
+      {
+        title: "Interactive Periodic Table",
+        formulas: [],
+        notes: [
+          "Click the button below to view the full interactive periodic table with all 118 elements.",
+          "Filter by element category: Alkali Metals, Halogens, Noble Gases, Transition Metals, etc.",
+          "Hover over any element to see its atomic number, symbol, and name.",
+          "Lanthanides (Row 8) and Actinides (Row 9) are shown separately below the main table.",
+        ],
+        mistakes: [],
+        tricks: ["Use the category filter to quickly find elements by group — great for JEE/CET questions!"],
+      },
+      {
+        title: "Periodic Trends",
+        formulas: [],
+        notes: [
+          "Atomic radius: increases down group, decreases across period (left to right)",
+          "Ionization energy: decreases down group, increases across period",
+          "IE exception: N > O (half-filled 2p is extra stable)",
+          "Electron affinity: increases across period (F exception: F < Cl due to small size)",
+          "Electronegativity: F is highest (4.0 Pauling scale)",
+          "Metallic character: increases down group, decreases across period",
+        ],
+        mistakes: ["Saying F has highest EA (actually Cl has higher EA than F)", "Forgetting IE anomaly at Group 15 vs 16"],
+        tricks: ["Smallest atom: He; Largest atom: Fr; Most electronegative: F"],
+      },
+    ],
+  },
+  {
+    id: "bonding",
+    title: "Chemical Bonding",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "4%", cet: "5%" },
+    sections: [
+      {
+        title: "VSEPR & Hybridization",
+        formulas: [
+          { label: "Formal charge", tex: "FC = V - N - \\frac{B}{2}", jee: true, cet: true },
+          { label: "Bond order", tex: "BO = \\frac{\\text{bonding e}^- - \\text{antibonding e}^-}{2}", jee: true, cet: true },
+          { label: "Dipole moment", tex: "\\mu = q \\times d", jee: true, cet: true },
+        ],
+        notes: [
+          "VSEPR: lone pairs cause more repulsion than bond pairs",
+          "sp: linear (180°), sp²: trigonal planar (120°), sp³: tetrahedral (109.5°)",
+          "sp³d: trigonal bipyramidal, sp³d²: octahedral",
+          "Bond order ↑ → bond length ↓, bond energy ↑",
+          "Examples: BF₃ (sp², no dipole), NH₃ (sp³, has dipole), H₂O (sp³, bent)",
+          "CO₂: linear, nonpolar despite polar bonds",
+        ],
+        mistakes: ["Predicting bent shape for CO₂ (it's linear)", "Ignoring lone pairs in hybridization count"],
+        tricks: ["Hybridization = ½(V + bonds + lone pairs - charge) for central atom"],
+      },
+    ],
+  },
+  {
+    id: "thermo_chem",
+    title: "Thermodynamics",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "5%", cet: "6%" },
+    sections: [
+      {
+        title: "Laws & Key Equations",
+        formulas: [
+          { label: "First law", tex: "\\Delta U = q + w = q - P\\Delta V", jee: true, cet: true, important: true },
+          { label: "Enthalpy", tex: "H = U + PV \\Rightarrow \\Delta H = \\Delta U + \\Delta n_g RT", jee: true, cet: true, important: true },
+          { label: "Gibbs free energy", tex: "\\Delta G = \\Delta H - T\\Delta S", jee: true, cet: true, important: true },
+          { label: "Spontaneity", tex: "\\Delta G < 0 \\text{ (spontaneous)}", jee: true, cet: true },
+          { label: "Entropy change", tex: "\\Delta S = \\frac{q_{rev}}{T}", jee: true, cet: false },
+          { label: "Hess's law", tex: "\\Delta H_{rxn} = \\sum \\Delta H_f(\\text{products}) - \\sum \\Delta H_f(\\text{reactants})", jee: true, cet: true, important: true },
+          { label: "Bond enthalpy", tex: "\\Delta H = \\sum \\text{bonds broken} - \\sum \\text{bonds formed}", jee: true, cet: true },
+          { label: "Work done by gas", tex: "w = -P_{ext}\\Delta V", jee: true, cet: true },
+          { label: "Cp - Cv", tex: "C_p - C_v = R", jee: true, cet: false },
+        ],
+        notes: [
+          "ΔH < 0: exothermic; ΔH > 0: endothermic",
+          "Standard state: 25°C, 1 bar",
+          "Δng = moles of gaseous products − moles of gaseous reactants",
+          "ΔG = 0 at equilibrium",
+          "Third law: entropy of perfect crystal at 0 K = 0",
+        ],
+        mistakes: ["Sign of work: w = −PΔV (work done BY system)", "Forgetting to count only gaseous moles for Δng"],
+        tricks: ["ΔG < 0, ΔH < 0, ΔS > 0: always spontaneous"],
+      },
+    ],
+  },
+  {
+    id: "equilibrium",
+    title: "Chemical Equilibrium",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "5%", cet: "6%" },
+    sections: [
+      {
+        title: "Equilibrium Constants",
+        formulas: [
+          { label: "Kc expression", tex: "K_c = \\frac{[C]^c[D]^d}{[A]^a[B]^b}", jee: true, cet: true, important: true },
+          { label: "Kp from Kc", tex: "K_p = K_c(RT)^{\\Delta n_g}", jee: true, cet: true, important: true },
+          { label: "Relation with ΔG°", tex: "\\Delta G^\\circ = -RT\\ln K", jee: true, cet: false },
+          { label: "Reaction quotient", tex: "Q_c < K_c: \\text{ forward favored}", jee: true, cet: true },
+          { label: "Degree of dissociation (α)", tex: "K_c = \\frac{c\\alpha^2}{1-\\alpha} \\approx c\\alpha^2 \\text{ (if } \\alpha \\ll 1)", jee: true, cet: true },
+        ],
+        notes: [
+          "Le Chatelier's principle: system shifts to counteract change",
+          "Increasing pressure: favors fewer moles of gas side",
+          "Adding inert gas at constant V: no effect on equilibrium",
+          "K depends only on temperature, not concentrations",
+          "Kp = Kc when Δng = 0",
+        ],
+        mistakes: ["Including solids/pure liquids in K expression", "Confusing Q and K"],
+        tricks: ["Kp > Kc when Δng > 0; Kp < Kc when Δng < 0"],
+      },
+    ],
+  },
+  {
+    id: "ionic_eq",
+    title: "Ionic Equilibrium",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "4%", cet: "5%" },
+    sections: [
+      {
+        title: "pH, Buffers & Solubility",
+        formulas: [
+          { label: "pH definition", tex: "\\text{pH} = -\\log[\\text{H}^+]", jee: true, cet: true, important: true },
+          { label: "pOH definition", tex: "\\text{pOH} = -\\log[\\text{OH}^-]", jee: true, cet: true },
+          { label: "pH + pOH at 25°C", tex: "\\text{pH} + \\text{pOH} = 14", jee: true, cet: true, important: true },
+          { label: "Kw at 25°C", tex: "K_w = [H^+][OH^-] = 10^{-14}", jee: true, cet: true },
+          { label: "Weak acid pH", tex: "\\text{pH} = \\frac{1}{2}(\\text{p}K_a - \\log c)", jee: true, cet: true },
+          { label: "Henderson-Hasselbalch", tex: "\\text{pH} = \\text{p}K_a + \\log\\frac{[\\text{salt}]}{[\\text{acid}]}", jee: true, cet: true, important: true },
+          { label: "Solubility product", tex: "K_{sp} = [A^+]^m [B^-]^n", jee: true, cet: true, important: true },
+          { label: "Common ion effect", tex: "\\text{Adding common ion} \\Rightarrow K_{sp} \\downarrow \\text{ solubility}", jee: true, cet: true },
+        ],
+        notes: [
+          "pH < 7: acidic; pH > 7: basic; pH = 7: neutral (at 25°C)",
+          "Buffer: resists change in pH (weak acid + its salt)",
+          "Degree of hydrolysis: h = √(Kh/c)",
+          "Salt of weak acid + strong base: pH > 7",
+          "Salt of strong acid + weak base: pH < 7",
+        ],
+        mistakes: ["Saying neutral water always has pH=7 (true only at 25°C)", "Wrong formula for solubility from Ksp"],
+        tricks: ["pH of 10⁻⁸ M HCl ≈ 7 (contribution of water, not less than 7)"],
+      },
+    ],
+  },
+  {
+    id: "redox",
+    title: "Redox Reactions",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "3%", cet: "4%" },
+    sections: [
+      {
+        title: "Oxidation States & Balancing",
+        formulas: [
+          { label: "n-factor (redox)", tex: "n = \\text{change in oxidation state} \\times \\text{atoms undergoing change}", jee: true, cet: true, important: true },
+          { label: "Equivalents balance", tex: "n_1 \\times N_1 = n_2 \\times N_2", jee: true, cet: true },
+          { label: "n-factor for KMnO4 (acidic)", tex: "n = 5 \\text{ (Mn: +7 → +2)}", jee: true, cet: true },
+          { label: "n-factor for KMnO4 (neutral)", tex: "n = 3 \\text{ (Mn: +7 → +4)}", jee: true, cet: true },
+          { label: "n-factor for KMnO4 (basic)", tex: "n = 1 \\text{ (Mn: +7 → +6)}", jee: true, cet: true },
+          { label: "n-factor for K2Cr2O7", tex: "n = 6 \\text{ (Cr: +6 → +3)}", jee: true, cet: true },
+        ],
+        notes: [
+          "Oxidation state rules: O = −2 (except peroxide: −1), H = +1 (except hydrides: −1), F = −1",
+          "Sum of oxidation states in neutral compound = 0",
+          "Sum of oxidation states in ion = charge of ion",
+        ],
+        mistakes: ["Wrong OS for oxygen in peroxides", "Missing disproportionation reactions"],
+        tricks: ["Oxidation = loss of electrons (OIL); Reduction = gain of electrons (RIG)"],
+      },
+    ],
+  },
+  {
+    id: "coord",
+    title: "Coordination Compounds",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "3%", cet: "4%" },
+    sections: [
+      {
+        title: "Nomenclature & VBT",
+        formulas: [],
+        notes: [
+          "IUPAC: anionic ligands first (alphabetical), then cationic; metal name + oxidation state",
+          "Ligand denticity: mono (H₂O, NH₃, Cl⁻), bi (en, ox²⁻), poly (EDTA: hexadentate)",
+          "VBT hybridization: d²sp³ = inner orbital (octahedral, low spin), sp³d² = outer orbital (high spin)",
+          "[Co(NH₃)₆]³⁺: d²sp³, diamagnetic | [CoF₆]³⁻: sp³d², paramagnetic",
+          "EAN rule: effective atomic number = metal electrons + ligand electrons",
+          "Crystal field: Δ₀ determines high/low spin in octahedral complexes",
+          "Spectrochemical series (weak to strong field): I⁻ < Br⁻ < Cl⁻ < F⁻ < OH⁻ < C₂O₄²⁻ < H₂O < NH₃ < en < CN⁻ < CO",
+          "CFSE (octahedral, d⁶ low spin): −2.4Δ₀",
+        ],
+        mistakes: ["Naming cation before anion in complex", "Confusing inner and outer orbital complexes"],
+        tricks: ["Strong field ligands: CO, CN⁻, en, NH₃ — cause low spin"],
+      },
+    ],
+  },
+  {
+    id: "goc",
+    title: "General Organic Chemistry (GOC)",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "4%", cet: "5%" },
+    sections: [
+      {
+        title: "Electronic Effects",
+        formulas: [
+          { label: "Inductive effect order (+I)", tex: "\\text{Alkyl} > H > \\text{Halogens}", jee: true, cet: true },
+          { label: "Resonance stability (carbanion)", tex: "CH_2^- < \\text{allylic} < \\text{benzylic} < \\text{beside C=O}", jee: true, cet: true },
+        ],
+        notes: [
+          "+I groups (electron donating): −OR, −OH, −NHR, −NH₂, alkyl groups",
+          "−I groups (electron withdrawing): −NO₂, −CN, −COOH, −X (halogens)",
+          "+M groups: −OH, −OR, −NH₂, −X (donate by resonance)",
+          "−M groups: −NO₂, −CHO, −COOH, −C≡N (withdraw by resonance)",
+          "Carbocation stability: 3° > 2° > 1° > CH₃⁺; allylic > secondary",
+          "Free radical stability: 3° > 2° > 1°",
+          "Carbanion stability (reverse of carbocation): more substituents = less stable",
+          "Hyperconjugation: σ electrons of C−H delocalize into empty p orbital",
+        ],
+        mistakes: ["Confusing inductive and mesomeric effect magnitudes", "F: −I but +M (halogen paradox)"],
+        tricks: ["Stability of carbocation: more hyperconjugating H's → more stable"],
+      },
+    ],
+  },
+  {
+    id: "isomerism",
+    title: "Isomerism",
+    tags: ["JEE", "CET"],
+    weightage: { jee: "3%", cet: "4%" },
+    sections: [
+      {
+        title: "Structural & Stereoisomerism",
+        formulas: [
+          { label: "Degree of unsaturation (DBE)", tex: "DBE = \\frac{2C + 2 + N - H - X}{2}", jee: true, cet: true, important: true },
+        ],
+        notes: [
+          "Structural isomers: same molecular formula, different connectivity",
+          "Chain, position, functional group, ring-chain isomers",
+          "Geometrical (cis-trans): restricted rotation (double bonds, rings)",
+          "Optical isomerism: non-superimposable mirror images (enantiomers)",
+          "Chiral center: 4 different groups attached to carbon",
+          "Number of stereoisomers ≤ 2ⁿ where n = chiral centers",
+          "Meso compound: has chiral centers but internally compensated (optically inactive)",
+          "Enantiomers: same physical properties, opposite optical rotation",
+          "Diastereomers: different physical properties, not mirror images",
+          "R/S configuration: Cahn-Ingold-Prelog rules (by decreasing priority)",
+        ],
+        mistakes: ["Calling meso compound optically active", "Forgetting geometric isomerism in rings"],
+        tricks: ["DBE = 1: one double bond or ring; DBE = 4: benzene ring"],
+      },
+    ],
+  },
+];
+
+export { CHEMISTRY_DATA };
